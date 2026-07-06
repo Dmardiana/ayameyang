@@ -1,0 +1,6 @@
+{
+  "name": "AyamEyang",
+  "description": "Website resmi restoran modern AyamEyang dengan informasi menu, pemesanan online, reservasi meja, dan dashboard admin.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

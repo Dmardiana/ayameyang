@@ -1,0 +1,1111 @@
+{
+  "users": [
+    {
+      "id": "usr_admin",
+      "email": "admin@ayameyang.com",
+      "name": "Eyang Admin",
+      "role": "admin",
+      "phone": "08123456789",
+      "address": "Jalan Kaliurang KM 5, Sleman, Yogyakarta",
+      "createdAt": "2026-01-01T12:00:00Z"
+    },
+    {
+      "id": "usr_customer",
+      "email": "customer@ayameyang.com",
+      "name": "Budi Santoso",
+      "role": "customer",
+      "phone": "08987654321",
+      "address": "Jalan Malioboro No. 42, Yogyakarta",
+      "createdAt": "2026-02-01T14:30:00Z"
+    }
+  ],
+  "menu": [
+    {
+      "id": "mn_1",
+      "name": "Ayam Geprek Sambal Korek",
+      "description": "Ayam goreng tepung renyah berpadu gurih pedasnya sambal korek bawang segar yang disiram minyak kelapa panas, disajikan lengkap dengan nasi hangat dan free kol goreng. Pedas menggoda!",
+      "price": 25000,
+      "category": "makanan",
+      "image": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=800",
+      "isAvailable": true,
+      "rating": 4.9,
+      "soldCount": 520
+    },
+    {
+      "id": "mn_2",
+      "name": "Ayam Bakar Karamel Eyang",
+      "description": "Ayam bakar yang diungkep bumbu rempah manis gurih khas Eyang, dibakar di atas arang kelapa hingga harum meresap, disajikan lengkap dengan nasi hangat, sambal, lalapan, dan free kol goreng.",
+      "price": 25000,
+      "category": "makanan",
+      "image": "https://images.unsplash.com/photo-1598515213692-5f252f75d785?q=80&w=800",
+      "isAvailable": true,
+      "rating": 4.8,
+      "soldCount": 380
+    },
+    {
+      "id": "mn_3",
+      "name": "Ayam Goreng Serundeng Eyang",
+      "description": "Ayam goreng kuning renyah gurih dengan taburan kremesan serundeng bumbu rempah murni, disajikan lengkap dengan nasi hangat, sambal terasi matang, lalapan, dan free kol goreng.",
+      "price": 25000,
+      "category": "makanan",
+      "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800",
+      "isAvailable": true,
+      "rating": 4.7,
+      "soldCount": 450
+    },
+    {
+      "id": "mn_4",
+      "name": "Tahu Goreng Gurih",
+      "description": "Tahu kuning gurih khas parahyangan yang digoreng garing renyah di luar namun lembut padat di dalam, pendamping sempurna ayam geprek AyamEyang.",
+      "price": 6000,
+      "category": "makanan",
+      "image": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800",
+      "isAvailable": true,
+      "rating": 4.7,
+      "soldCount": 290
+    },
+    {
+      "id": "mn_5",
+      "name": "Tempe Mendoan Hangat",
+      "description": "Tempe gurih berbalur adonan tepung bumbu ketumbar dan irisan daun bawang segar melimpah, digoreng hangat renyah khas mendoan.",
+      "price": 6000,
+      "category": "makanan",
+      "image": "https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=800",
+      "isAvailable": true,
+      "rating": 4.8,
+      "soldCount": 480
+    },
+    {
+      "id": "mn_6",
+      "name": "Free Kol Goreng Crispy",
+      "description": "Kol kubis segar diiris lebar lalu digoreng cepat dalam minyak kelapa panas hingga kecoklatan beraroma manis gurih. Gratis spesial untuk Anda pendamping lauk ayam!",
+      "price": 0,
+      "category": "makanan",
+      "image": "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?q=80&w=800",
+      "isAvailable": true,
+      "rating": 4.9,
+      "soldCount": 999
+    },
+    {
+      "id": "mn_21",
+      "name": "Es Teh Manis Selasih",
+      "description": "Seduhan teh melati wangi murni khas Solo dengan es batu segar dan taburan butiran selasih penyejuk dahaga.",
+      "price": 6000,
+      "category": "minuman",
+      "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800",
+      "isAvailable": true,
+      "rating": 4.8,
+      "soldCount": 750
+    },
+    {
+      "id": "mn_22",
+      "name": "Es Jeruk Peras Murni",
+      "description": "Perasan jeruk Pontianak segar pilihan kaya vitamin C alami murni segar dingin membasahi tenggorokan.",
+      "price": 8000,
+      "category": "minuman",
+      "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800",
+      "isAvailable": true,
+      "rating": 4.7,
+      "soldCount": 450
+    },
+    {
+      "id": "mn_23",
+      "name": "Es Soda Gembira",
+      "description": "Paduan air soda berkarbonasi dingin, susu kental manis putih, dan sirup frambozen merah yang memanjakan lidah.",
+      "price": 8000,
+      "category": "minuman",
+      "image": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=800",
+      "isAvailable": true,
+      "rating": 4.6,
+      "soldCount": 200
+    },
+    {
+      "id": "mn_24",
+      "name": "Wedang Jahe Sereh",
+      "description": "Seduhan hangat tradisional hasil rebusan jahe merah bakar geprek murni dan batang sereh wangi alami yang menyehatkan.",
+      "price": 7000,
+      "category": "minuman",
+      "image": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?q=80&w=800",
+      "isAvailable": true,
+      "rating": 4.8,
+      "soldCount": 120
+    },
+    {
+      "id": "mn_25",
+      "name": "Air Mineral Dingin",
+      "description": "Air mineral pegunungan kemasan botol steril yang disajikan dingin segar penawar rasa pedas lada.",
+      "price": 6000,
+      "category": "minuman",
+      "image": "https://images.unsplash.com/photo-1523362628745-0c100150b504?q=80&w=800",
+      "isAvailable": true,
+      "rating": 4.6,
+      "soldCount": 310
+    }
+  ],
+  "promos": [
+    {
+      "id": "pr_1",
+      "title": "Diskon Spesial AyamEyang 10%",
+      "description": "Nikmati hidangan ayam legendaris warisan resep Eyang dengan potongan instan 10% untuk semua menu tanpa minimum pembelian.",
+      "code": "PROMOEYANG10",
+      "discountPercent": 10,
+      "bannerUrl": "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=800",
+      "isAvailable": true,
+      "minPurchase": 0
+    },
+    {
+      "id": "pr_2",
+      "title": "Kenyang Hemat Bareng AyamEyang",
+      "description": "Makan berdua lebih seru dan hemat! Potongan Rp 25.000 untuk minimal pembelanjaan senilai Rp 100.000 menggunakan kode promo ini.",
+      "code": "AYAMKENYANG",
+      "discountPercent": 15,
+      "bannerUrl": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800",
+      "isAvailable": true,
+      "minPurchase": 100000
+    },
+    {
+      "id": "pr_3",
+      "title": "Kumpul Keluarga Hari Minggu",
+      "description": "Waktunya makan bersama seluruh keluarga besar di hari Minggu. Dapatkan diskon spesial 20% untuk transaksi minimum Rp 200.000.",
+      "code": "MINGGUKELUARGA",
+      "discountPercent": 20,
+      "bannerUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800",
+      "isAvailable": true,
+      "minPurchase": 200000
+    },
+    {
+      "id": "pr_4",
+      "title": "Reservasi Meja VIP Prioritas",
+      "description": "Pesan meja VIP Anda hari ini untuk pertemuan bisnis atau acara ulang tahun keluarga, dapatkan potongan instan 15% hidangan pembuka.",
+      "code": "RESERVASIVIP",
+      "discountPercent": 15,
+      "bannerUrl": "https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800",
+      "isAvailable": true,
+      "minPurchase": 150000
+    },
+    {
+      "id": "pr_5",
+      "title": "Makan Hemat Tengah Bulan",
+      "description": "Jangan khawatir kantong kering di pertengahan bulan. Dapatkan diskon 12% untuk mengobati selera makan Anda sepuasnya.",
+      "code": "MAKANHEMAT",
+      "discountPercent": 12,
+      "bannerUrl": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=800",
+      "isAvailable": true,
+      "minPurchase": 75000
+    }
+  ],
+  "branches": [
+    {
+      "id": "br_1",
+      "name": "AyamEyang Cabang Utama Bandung",
+      "address": "Jalan Gatot Subroto, Karees Kulon No. 11/33, Bandung",
+      "phone": "+62 859-5646-5878 / +62 818-0222-2979",
+      "lat": -6.9262,
+      "lng": 107.6366,
+      "isMainBranch": true,
+      "comingSoon": false
+    },
+    {
+      "id": "br_2",
+      "name": "AyamEyang Cabang Jakarta",
+      "address": "Jakarta (Coming Soon)",
+      "phone": "-",
+      "lat": -6.2736,
+      "lng": 106.8143,
+      "isMainBranch": false,
+      "comingSoon": true
+    },
+    {
+      "id": "br_3",
+      "name": "AyamEyang Cabang Yogyakarta",
+      "address": "Yogyakarta (Coming Soon)",
+      "phone": "-",
+      "lat": -7.7592,
+      "lng": 110.3789,
+      "isMainBranch": false,
+      "comingSoon": true
+    },
+    {
+      "id": "br_4",
+      "name": "AyamEyang Cabang Surabaya",
+      "address": "Surabaya (Coming Soon)",
+      "phone": "-",
+      "lat": -7.2711,
+      "lng": 112.7523,
+      "isMainBranch": false,
+      "comingSoon": true
+    },
+    {
+      "id": "br_5",
+      "name": "AyamEyang Cabang Solo",
+      "address": "Solo (Coming Soon)",
+      "phone": "-",
+      "lat": -7.5684,
+      "lng": 110.8012,
+      "isMainBranch": false,
+      "comingSoon": true
+    }
+  ],
+  "reviews": [
+    {
+      "id": "rv_1",
+      "customerName": "Siti Rahma",
+      "rating": 5,
+      "comment": "Ayam Kremesnya luar biasa renyah dan bumbunya benar-benar gurih sampai ke dalam tulang! Sambal terasinya juara.",
+      "menuId": "mn_1",
+      "menuName": "Ayam Goreng Kremes Eyang",
+      "date": "2026-06-15"
+    },
+    {
+      "id": "rv_2",
+      "customerName": "Doni Setiawan",
+      "rating": 5,
+      "comment": "Bumbu rujak di ayam bakarnya benar-benar kaya rempah. Manis, asam, gurih, dan pedasnya pas sekali dengan selera lidah Jawa saya.",
+      "menuId": "mn_2",
+      "menuName": "Ayam Bakar Bumbu Rujak",
+      "date": "2026-06-18"
+    },
+    {
+      "id": "rv_3",
+      "customerName": "Yulia Ningsih",
+      "rating": 4,
+      "comment": "Sate ayamnya sangat empuk, saus kacangnya kental, gurih manisnya pas. Anak-anak sangat suka menu sate ini.",
+      "menuId": "mn_4",
+      "menuName": "Sate Ayam Madura",
+      "date": "2026-06-20"
+    },
+    {
+      "id": "rv_4",
+      "customerName": "Rian Hidayat",
+      "rating": 5,
+      "comment": "Soto Lamongannya kental akan bumbu koya gurih yang melimpah ruah. Sangat nikmat dimakan hangat-hangat di musim hujan.",
+      "menuId": "mn_5",
+      "menuName": "Soto Ayam Lamongan",
+      "date": "2026-06-22"
+    },
+    {
+      "id": "rv_5",
+      "customerName": "Dewi Lestari",
+      "rating": 5,
+      "comment": "Rendang daging sapinya sungguh lembut sekali langsung lumer di mulut. Bumbu karamelnya pekat, hitam eksotis dan sangat wangi.",
+      "menuId": "mn_6",
+      "menuName": "Rendang Daging Sapi Eyang",
+      "date": "2026-06-23"
+    },
+    {
+      "id": "rv_6",
+      "customerName": "Agus Purnomo",
+      "rating": 4,
+      "comment": "Nasi goreng kampungnya lezat beraroma wok-hei khas wajan besi panas. Porsinya mengenyangkan, lengkap dengan telur mata sapi.",
+      "menuId": "mn_7",
+      "menuName": "Nasi Goreng Spesial Eyang",
+      "date": "2026-06-24"
+    },
+    {
+      "id": "rv_7",
+      "customerName": "Lina Marlina",
+      "rating": 5,
+      "comment": "Ayam Geprek Sambal Koreknya benar-benar pedas meledak tapi bikin nagih terus! Untuk pecinta pedas, ini wajib dicoba.",
+      "menuId": "mn_3",
+      "menuName": "Ayam Geprek Sambal Korek",
+      "date": "2026-06-25"
+    },
+    {
+      "id": "rv_8",
+      "customerName": "Bambang Tri",
+      "rating": 5,
+      "comment": "Sangat menyukai Es Campur segarnya! Bahan-bahannya lengkap, buah nangkanya sangat harum dan sirupnya manis murni pas.",
+      "menuId": "mn_27",
+      "menuName": "Es Campur Segar Legendaris",
+      "date": "2026-06-26"
+    },
+    {
+      "id": "rv_9",
+      "customerName": "Wulan Sari",
+      "rating": 5,
+      "comment": "Pisang Goreng Keju Caramel adalah penutup yang sempurna. Adonannya kriuk manis, kejunya gurih melimpah di atasnya.",
+      "menuId": "mn_31",
+      "menuName": "Pisang Goreng Keju Caramel",
+      "date": "2026-06-27"
+    },
+    {
+      "id": "rv_10",
+      "customerName": "Fajar Shidiq",
+      "rating": 4,
+      "comment": "Es Kopi Susu Arennya memiliki kombinasi pahit kopi gayo dan legit gula aren yang sangat serasi. Cocok jadi pendamping makan siang.",
+      "menuId": "mn_28",
+      "menuName": "Es Kopi Susu Aren Pekat",
+      "date": "2026-06-28"
+    },
+    {
+      "id": "rv_11",
+      "customerName": "Indah Kusuma",
+      "rating": 5,
+      "comment": "Sup buntut sapinya empuk sekali, kuah kaldunya bening tapi kaya rasa rempah rempah alami. Sangat menyehatkan tubuh.",
+      "menuId": "mn_12",
+      "menuName": "Sup Buntut Sapi Rempah",
+      "date": "2026-06-29"
+    },
+    {
+      "id": "rv_12",
+      "customerName": "Rudi Hartono",
+      "rating": 5,
+      "comment": "Tempe mendoannya disajikan selagi panas mengepul dengan kecap cabai rawit pedas manis. Sangat gurih berkat irisan daun bawang.",
+      "menuId": "mn_16",
+      "menuName": "Tempe Mendoan Anget",
+      "date": "2026-06-30"
+    },
+    {
+      "id": "rv_13",
+      "customerName": "Yusuf Mansur",
+      "rating": 4,
+      "comment": "Ayam Betutunya memiliki rasa rempah Bali otentik yang sangat kuat. Meresap sempurna sampai ke dalam serat daging ayam.",
+      "menuId": "mn_9",
+      "menuName": "Ayam Betutu Gilimanuk",
+      "date": "2026-07-01"
+    },
+    {
+      "id": "rv_14",
+      "customerName": "Sinta Bella",
+      "rating": 5,
+      "comment": "Baksonya kenyal, kuah sumsumnya gurih kaldu sapi pekat alami bukan sekadar penyedap rasa buatan. Porsinya pas.",
+      "menuId": "mn_13",
+      "menuName": "Bakso Sapi Kuah Eyang",
+      "date": "2026-07-02"
+    },
+    {
+      "id": "rv_15",
+      "customerName": "Andi Wijaya",
+      "rating": 5,
+      "comment": "Jus Alpukatnya sangat kental, rasa coklat manisnya pas, alpukatnya tidak ada rasa pahit sama sekali. Sangat segar.",
+      "menuId": "mn_24",
+      "menuName": "Jus Alpukat Kerok Coklat",
+      "date": "2026-07-03"
+    },
+    {
+      "id": "rv_16",
+      "customerName": "Novianti",
+      "rating": 5,
+      "comment": "Ayam Taliwangnya pedasnya mantap menggigit! Sambal jeruk limau di bumbu bakarannya meresap gila-gilaan. Rekomendasi banget.",
+      "menuId": "mn_10",
+      "menuName": "Ayam Taliwang Lombok",
+      "date": "2026-07-04"
+    },
+    {
+      "id": "rv_17",
+      "customerName": "Hendra Setiawan",
+      "rating": 5,
+      "comment": "Tahu Kipisnya berisi udang besar manis segar di dalamnya. Kulit tahu kipas digoreng sangat renyah krispi.",
+      "menuId": "mn_17",
+      "menuName": "Tahu Kipas Udang Crispy",
+      "date": "2026-07-04"
+    },
+    {
+      "id": "rv_18",
+      "customerName": "Mega Utami",
+      "rating": 4,
+      "comment": "Es Teler Duriannya sungguh luar biasa harum durian Medan asli berpadu lembutnya alpukat kerok dan daging kelapa muda.",
+      "menuId": "mn_34",
+      "menuName": "Es Teler Istimewa Durian",
+      "date": "2026-07-05"
+    },
+    {
+      "id": "rv_19",
+      "customerName": "Gilang Ramadhan",
+      "rating": 5,
+      "comment": "Mie Jawa Nyemeknya lezat tiada tandingan dengan sentuhan manis gurih dan aroma smokey khas wajan besi tradisional.",
+      "menuId": "mn_8",
+      "menuName": "Mie Goreng Jawa Nyemek",
+      "date": "2026-07-05"
+    },
+    {
+      "id": "rv_20",
+      "customerName": "Kiki Amalia",
+      "rating": 5,
+      "comment": "Sambal Ulek Terasinya sangat segar karena diulek dadakan. Sangat cocok dinikmati berdampingan dengan Ayam Goreng Kremes Eyang.",
+      "menuId": "mn_19",
+      "menuName": "Sambal Terasi Ulek Eyang",
+      "date": "2026-07-06"
+    }
+  ],
+  "reservations": [
+    {
+      "id": "res_1",
+      "customerName": "Ahmad Wijaya",
+      "customerEmail": "ahmad@example.com",
+      "customerPhone": "08123456700",
+      "date": "2026-07-07",
+      "time": "12:00",
+      "numberOfGuests": 2,
+      "tableNumber": "1",
+      "status": "confirmed",
+      "createdAt": "2026-07-01T10:10:00Z"
+    },
+    {
+      "id": "res_2",
+      "userId": "usr_customer",
+      "customerName": "Budi Wijaya",
+      "customerEmail": "budi@example.com",
+      "customerPhone": "08123456710",
+      "date": "2026-07-08",
+      "time": "13:00",
+      "numberOfGuests": 3,
+      "tableNumber": "2",
+      "status": "pending",
+      "specialRequests": "Memerlukan kursi bayi (baby chair)",
+      "createdAt": "2026-07-01T10:11:00Z"
+    },
+    {
+      "id": "res_3",
+      "customerName": "Chandra Wijaya",
+      "customerEmail": "chandra@example.com",
+      "customerPhone": "08123456720",
+      "date": "2026-07-09",
+      "time": "18:00",
+      "numberOfGuests": 4,
+      "tableNumber": "3",
+      "status": "cancelled",
+      "specialRequests": "Meja di area bebas asap rokok (non-smoking area)",
+      "createdAt": "2026-07-01T10:12:00Z"
+    },
+    {
+      "id": "res_4",
+      "customerName": "Diana Wijaya",
+      "customerEmail": "diana@example.com",
+      "customerPhone": "08123456730",
+      "date": "2026-07-10",
+      "time": "19:00",
+      "numberOfGuests": 5,
+      "tableNumber": "4",
+      "status": "pending",
+      "createdAt": "2026-07-01T10:13:00Z"
+    },
+    {
+      "id": "res_5",
+      "customerName": "Evi Wijaya",
+      "customerEmail": "evi@example.com",
+      "customerPhone": "08123456740",
+      "date": "2026-07-11",
+      "time": "20:00",
+      "numberOfGuests": 2,
+      "tableNumber": "5",
+      "status": "confirmed",
+      "createdAt": "2026-07-01T10:14:00Z"
+    },
+    {
+      "id": "res_6",
+      "customerName": "Fandi Wijaya",
+      "customerEmail": "fandi@example.com",
+      "customerPhone": "08123456750",
+      "date": "2026-07-12",
+      "time": "12:00",
+      "numberOfGuests": 3,
+      "tableNumber": "6",
+      "status": "cancelled",
+      "specialRequests": "Memerlukan kursi bayi (baby chair)",
+      "createdAt": "2026-07-01T10:15:00Z"
+    },
+    {
+      "id": "res_7",
+      "customerName": "Gita Wijaya",
+      "customerEmail": "gita@example.com",
+      "customerPhone": "08123456760",
+      "date": "2026-07-13",
+      "time": "13:00",
+      "numberOfGuests": 4,
+      "tableNumber": "7",
+      "status": "confirmed",
+      "specialRequests": "Meja di area bebas asap rokok (non-smoking area)",
+      "createdAt": "2026-07-01T10:16:00Z"
+    },
+    {
+      "id": "res_8",
+      "customerName": "Hadi Wijaya",
+      "customerEmail": "hadi@example.com",
+      "customerPhone": "08123456770",
+      "date": "2026-07-14",
+      "time": "18:00",
+      "numberOfGuests": 5,
+      "tableNumber": "8",
+      "status": "pending",
+      "createdAt": "2026-07-01T10:17:00Z"
+    },
+    {
+      "id": "res_9",
+      "customerName": "Indah Wijaya",
+      "customerEmail": "indah@example.com",
+      "customerPhone": "08123456780",
+      "date": "2026-07-15",
+      "time": "19:00",
+      "numberOfGuests": 2,
+      "tableNumber": "9",
+      "status": "cancelled",
+      "createdAt": "2026-07-01T10:18:00Z"
+    },
+    {
+      "id": "res_10",
+      "customerName": "Joko Wijaya",
+      "customerEmail": "joko@example.com",
+      "customerPhone": "08123456790",
+      "date": "2026-07-16",
+      "time": "20:00",
+      "numberOfGuests": 3,
+      "tableNumber": "10",
+      "status": "pending",
+      "specialRequests": "Memerlukan kursi bayi (baby chair)",
+      "createdAt": "2026-07-01T10:19:00Z"
+    }
+  ],
+  "orders": [
+    {
+      "id": "ord_1",
+      "userId": "usr_customer",
+      "customerName": "Andi Pratama",
+      "customerEmail": "andi@example.com",
+      "customerPhone": "08987654300",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_22",
+          "name": "Es Jeruk Peras Murni",
+          "price": 10000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800"
+        }
+      ],
+      "totalAmount": 42000,
+      "status": "completed",
+      "paymentMethod": "midtrans",
+      "tableNumber": "1",
+      "createdAt": "2026-07-01T11:10:00Z"
+    },
+    {
+      "id": "ord_2",
+      "customerName": "Bella Pratama",
+      "customerEmail": "bella@example.com",
+      "customerPhone": "08987654301",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_21",
+          "name": "Es Teh Manis Selasih",
+          "price": 6000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800"
+        }
+      ],
+      "totalAmount": 76000,
+      "status": "completed",
+      "paymentMethod": "transfer",
+      "notes": "Tolong ayamnya agak kering ya kremes melimpah",
+      "createdAt": "2026-07-01T12:11:00Z"
+    },
+    {
+      "id": "ord_3",
+      "customerName": "Citra Pratama",
+      "customerEmail": "citra@example.com",
+      "customerPhone": "08987654302",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 3,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_22",
+          "name": "Es Jeruk Peras Murni",
+          "price": 10000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800"
+        }
+      ],
+      "totalAmount": 106000,
+      "status": "completed",
+      "paymentMethod": "cash",
+      "createdAt": "2026-07-01T13:12:00Z"
+    },
+    {
+      "id": "ord_4",
+      "customerName": "Dani Pratama",
+      "customerEmail": "dani@example.com",
+      "customerPhone": "08987654303",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_21",
+          "name": "Es Teh Manis Selasih",
+          "price": 6000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800"
+        }
+      ],
+      "totalAmount": 44000,
+      "status": "completed",
+      "paymentMethod": "midtrans",
+      "createdAt": "2026-07-02T14:13:00Z"
+    },
+    {
+      "id": "ord_5",
+      "customerName": "Elsa Pratama",
+      "customerEmail": "elsa@example.com",
+      "customerPhone": "08987654304",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_22",
+          "name": "Es Jeruk Peras Murni",
+          "price": 10000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800"
+        }
+      ],
+      "totalAmount": 74000,
+      "status": "completed",
+      "paymentMethod": "transfer",
+      "tableNumber": "5",
+      "createdAt": "2026-07-02T15:14:00Z"
+    },
+    {
+      "id": "ord_6",
+      "customerName": "Farhan Pratama",
+      "customerEmail": "farhan@example.com",
+      "customerPhone": "08987654305",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 3,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_21",
+          "name": "Es Teh Manis Selasih",
+          "price": 6000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800"
+        }
+      ],
+      "totalAmount": 108000,
+      "status": "completed",
+      "paymentMethod": "cash",
+      "createdAt": "2026-07-02T16:15:00Z"
+    },
+    {
+      "id": "ord_7",
+      "customerName": "Gani Pratama",
+      "customerEmail": "gani@example.com",
+      "customerPhone": "08987654306",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_22",
+          "name": "Es Jeruk Peras Murni",
+          "price": 10000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800"
+        }
+      ],
+      "totalAmount": 42000,
+      "status": "completed",
+      "paymentMethod": "midtrans",
+      "notes": "Tolong ayamnya agak kering ya kremes melimpah",
+      "createdAt": "2026-07-03T17:16:00Z"
+    },
+    {
+      "id": "ord_8",
+      "customerName": "Hana Pratama",
+      "customerEmail": "hana@example.com",
+      "customerPhone": "08987654307",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_21",
+          "name": "Es Teh Manis Selasih",
+          "price": 6000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800"
+        }
+      ],
+      "totalAmount": 76000,
+      "status": "completed",
+      "paymentMethod": "transfer",
+      "createdAt": "2026-07-03T18:17:00Z"
+    },
+    {
+      "id": "ord_9",
+      "customerName": "Irfan Pratama",
+      "customerEmail": "irfan@example.com",
+      "customerPhone": "08987654308",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 3,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_22",
+          "name": "Es Jeruk Peras Murni",
+          "price": 10000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800"
+        }
+      ],
+      "totalAmount": 106000,
+      "status": "completed",
+      "paymentMethod": "cash",
+      "tableNumber": "1",
+      "createdAt": "2026-07-03T19:18:00Z"
+    },
+    {
+      "id": "ord_10",
+      "customerName": "Julia Pratama",
+      "customerEmail": "julia@example.com",
+      "customerPhone": "08987654309",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_21",
+          "name": "Es Teh Manis Selasih",
+          "price": 6000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800"
+        }
+      ],
+      "totalAmount": 44000,
+      "status": "completed",
+      "paymentMethod": "midtrans",
+      "createdAt": "2026-07-04T11:19:00Z"
+    },
+    {
+      "id": "ord_11",
+      "customerName": "Kiki Pratama",
+      "customerEmail": "kiki@example.com",
+      "customerPhone": "08987654310",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_22",
+          "name": "Es Jeruk Peras Murni",
+          "price": 10000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800"
+        }
+      ],
+      "totalAmount": 74000,
+      "status": "completed",
+      "paymentMethod": "transfer",
+      "createdAt": "2026-07-04T12:20:00Z"
+    },
+    {
+      "id": "ord_12",
+      "customerName": "Lukman Pratama",
+      "customerEmail": "lukman@example.com",
+      "customerPhone": "08987654311",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 3,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_21",
+          "name": "Es Teh Manis Selasih",
+          "price": 6000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800"
+        }
+      ],
+      "totalAmount": 108000,
+      "status": "completed",
+      "paymentMethod": "cash",
+      "notes": "Tolong ayamnya agak kering ya kremes melimpah",
+      "createdAt": "2026-07-04T13:21:00Z"
+    },
+    {
+      "id": "ord_13",
+      "customerName": "Mira Pratama",
+      "customerEmail": "mira@example.com",
+      "customerPhone": "08987654312",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_22",
+          "name": "Es Jeruk Peras Murni",
+          "price": 10000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800"
+        }
+      ],
+      "totalAmount": 42000,
+      "status": "completed",
+      "paymentMethod": "midtrans",
+      "tableNumber": "5",
+      "createdAt": "2026-07-05T14:22:00Z"
+    },
+    {
+      "id": "ord_14",
+      "customerName": "Niko Pratama",
+      "customerEmail": "niko@example.com",
+      "customerPhone": "08987654313",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_21",
+          "name": "Es Teh Manis Selasih",
+          "price": 6000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800"
+        }
+      ],
+      "totalAmount": 76000,
+      "status": "completed",
+      "paymentMethod": "transfer",
+      "createdAt": "2026-07-05T15:23:00Z"
+    },
+    {
+      "id": "ord_15",
+      "customerName": "Olga Pratama",
+      "customerEmail": "olga@example.com",
+      "customerPhone": "08987654314",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 3,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_22",
+          "name": "Es Jeruk Peras Murni",
+          "price": 10000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800"
+        }
+      ],
+      "totalAmount": 106000,
+      "status": "completed",
+      "paymentMethod": "cash",
+      "createdAt": "2026-07-05T16:24:00Z"
+    },
+    {
+      "id": "ord_16",
+      "customerName": "Putra Pratama",
+      "customerEmail": "putra@example.com",
+      "customerPhone": "08987654315",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_21",
+          "name": "Es Teh Manis Selasih",
+          "price": 6000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800"
+        }
+      ],
+      "totalAmount": 44000,
+      "status": "completed",
+      "paymentMethod": "midtrans",
+      "createdAt": "2026-07-06T17:25:00Z"
+    },
+    {
+      "id": "ord_17",
+      "customerName": "Rina Pratama",
+      "customerEmail": "rina@example.com",
+      "customerPhone": "08987654316",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_22",
+          "name": "Es Jeruk Peras Murni",
+          "price": 10000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800"
+        }
+      ],
+      "totalAmount": 74000,
+      "status": "completed",
+      "paymentMethod": "transfer",
+      "tableNumber": "1",
+      "notes": "Tolong ayamnya agak kering ya kremes melimpah",
+      "createdAt": "2026-07-06T18:26:00Z"
+    },
+    {
+      "id": "ord_18",
+      "customerName": "Sandi Pratama",
+      "customerEmail": "sandi@example.com",
+      "customerPhone": "08987654317",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 3,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_21",
+          "name": "Es Teh Manis Selasih",
+          "price": 6000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800"
+        }
+      ],
+      "totalAmount": 108000,
+      "status": "cooking",
+      "paymentMethod": "cash",
+      "createdAt": "2026-07-06T19:27:00Z"
+    },
+    {
+      "id": "ord_19",
+      "customerName": "Tari Pratama",
+      "customerEmail": "tari@example.com",
+      "customerPhone": "08987654318",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_22",
+          "name": "Es Jeruk Peras Murni",
+          "price": 10000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800"
+        }
+      ],
+      "totalAmount": 42000,
+      "status": "delivering",
+      "paymentMethod": "midtrans",
+      "createdAt": "2026-07-07T11:28:00Z"
+    },
+    {
+      "id": "ord_20",
+      "customerName": "Vino Pratama",
+      "customerEmail": "vino@example.com",
+      "customerPhone": "08987654319",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Goreng Kremes Eyang",
+          "price": 32000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_21",
+          "name": "Es Teh Manis Selasih",
+          "price": 6000,
+          "quantity": 2,
+          "image": "https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800"
+        }
+      ],
+      "totalAmount": 76000,
+      "status": "pending",
+      "paymentMethod": "transfer",
+      "createdAt": "2026-07-07T12:29:00Z"
+    }
+  ],
+  "contactMessages": [
+    {
+      "id": "msg_1",
+      "name": "Rahmat Kartolo",
+      "email": "rahmat@example.com",
+      "subject": "Tawaran Kerjasama Bahan Baku Ayam Kampung",
+      "message": "Halo, saya perwakilan dari peternakan ayam organik di Yogyakarta ingin menawarkan suplai ayam kampung kualitas super secara kontinu dengan harga yang sangat bersaing.",
+      "status": "unread",
+      "createdAt": "2026-07-05T09:00:00Z"
+    },
+    {
+      "id": "msg_2",
+      "name": "Sherly Anita",
+      "email": "sherly@example.com",
+      "subject": "Reservasi Acara Gathering Kantor 50 Orang",
+      "message": "Dear AyamEyang, kami berencana mengadakan acara gathering kantor untuk 50 orang di cabang Jakarta Selatan pada tanggal 20 Juli nanti. Apakah bisa dikirimkan proposal menu prasmanannya?",
+      "status": "read",
+      "createdAt": "2026-07-04T15:30:00Z"
+    }
+  ]
+}
