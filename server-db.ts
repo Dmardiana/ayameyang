@@ -3,854 +3,508 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import fs from 'fs';
-import path from 'path';
-import { MenuItem, Promo, Branch, Review, Reservation, Order, User, ContactMessage, OrderStatus, OrderItem } from './src/types';
+import pg from 'pg';
 
-const DB_FILE = path.join(process.cwd(), 'data-ayameyang.json');
+const { Pool } = pg;
 
-export interface DBState {
-  users: User[];
-  menu: MenuItem[];
-  promos: Promo[];
-  branches: Branch[];
-  reviews: Review[];
-  reservations: Reservation[];
-  orders: Order[];
-  contactMessages: ContactMessage[];
-}
+// Create PostgreSQL connection pool from DATABASE_URL
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || 'postgresql://dmardiana:@localhost:5432/ayameyang_db',
+});
 
-export function loadDB(): DBState {
-  if (fs.existsSync(DB_FILE)) {
+// Test connection on startup
+pool.query('SELECT NOW()')
+  .then(() => console.log('✅ PostgreSQL connected to ayameyang_db'))
+  .catch((err) => console.error('❌ PostgreSQL connection error:', err.message));
+
+export { pool };
+
+// ============================================
+// Helper Query Functions
+// ============================================
+
+export const db = {
+  // --- USERS ---
+  async getUsers() {
+    const { rows } = await pool.query(
+      'SELECT id, email, name, role, phone, address, created_at FROM users ORDER BY created_at'
+    );
+    return rows.map(mapUser);
+  },
+
+  async getUserByEmail(email: string) {
+    const { rows } = await pool.query(
+      'SELECT id, email, name, role, phone, address, password_hash, created_at FROM users WHERE email = $1',
+      [email]
+    );
+    return rows[0] || null;
+  },
+
+  async createUser(user: { id: string; email: string; name: string; role: string; phone: string; address: string; passwordHash: string }) {
+    const { rows } = await pool.query(
+      `INSERT INTO users (id, email, name, role, phone, address, password_hash) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) 
+       RETURNING id, email, name, role, phone, address, created_at`,
+      [user.id, user.email, user.name, user.role, user.phone, user.address, user.passwordHash]
+    );
+    return mapUser(rows[0]);
+  },
+
+  // --- MENU ITEMS ---
+  async getMenuItems() {
+    const { rows } = await pool.query('SELECT * FROM menu_items ORDER BY sold_count DESC');
+    return rows.map(mapMenuItem);
+  },
+
+  async createMenuItem(item: any) {
+    const { rows } = await pool.query(
+      `INSERT INTO menu_items (id, name, description, price, category, image, is_available, rating, sold_count) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+      [item.id, item.name, item.description, item.price, item.category, item.image, item.isAvailable ?? true, item.rating ?? 5.0, item.soldCount ?? 0]
+    );
+    return mapMenuItem(rows[0]);
+  },
+
+  async updateMenuItem(id: string, data: any) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (data.name !== undefined) { fields.push(`name = $${idx++}`); values.push(data.name); }
+    if (data.description !== undefined) { fields.push(`description = $${idx++}`); values.push(data.description); }
+    if (data.price !== undefined) { fields.push(`price = $${idx++}`); values.push(data.price); }
+    if (data.category !== undefined) { fields.push(`category = $${idx++}`); values.push(data.category); }
+    if (data.image !== undefined) { fields.push(`image = $${idx++}`); values.push(data.image); }
+    if (data.isAvailable !== undefined) { fields.push(`is_available = $${idx++}`); values.push(data.isAvailable); }
+    if (data.rating !== undefined) { fields.push(`rating = $${idx++}`); values.push(data.rating); }
+    if (data.soldCount !== undefined) { fields.push(`sold_count = $${idx++}`); values.push(data.soldCount); }
+
+    if (fields.length === 0) return null;
+
+    values.push(id);
+    const { rows } = await pool.query(
+      `UPDATE menu_items SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`,
+      values
+    );
+    return rows[0] ? mapMenuItem(rows[0]) : null;
+  },
+
+  async deleteMenuItem(id: string) {
+    const { rows } = await pool.query('DELETE FROM menu_items WHERE id = $1 RETURNING *', [id]);
+    return rows[0] ? mapMenuItem(rows[0]) : null;
+  },
+
+  async incrementSoldCount(menuItemId: string, qty: number) {
+    await pool.query('UPDATE menu_items SET sold_count = sold_count + $1 WHERE id = $2', [qty, menuItemId]);
+  },
+
+  // --- PROMOS ---
+  async getPromos() {
+    const { rows } = await pool.query('SELECT * FROM promos ORDER BY id');
+    return rows.map(mapPromo);
+  },
+
+  async createPromo(promo: any) {
+    const { rows } = await pool.query(
+      `INSERT INTO promos (id, title, description, code, discount_percent, banner_url, is_available, min_purchase) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [promo.id, promo.title, promo.description, promo.code, promo.discountPercent, promo.bannerUrl, promo.isAvailable ?? true, promo.minPurchase ?? 0]
+    );
+    return mapPromo(rows[0]);
+  },
+
+  async updatePromo(id: string, data: any) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (data.title !== undefined) { fields.push(`title = $${idx++}`); values.push(data.title); }
+    if (data.description !== undefined) { fields.push(`description = $${idx++}`); values.push(data.description); }
+    if (data.code !== undefined) { fields.push(`code = $${idx++}`); values.push(data.code); }
+    if (data.discountPercent !== undefined) { fields.push(`discount_percent = $${idx++}`); values.push(data.discountPercent); }
+    if (data.bannerUrl !== undefined) { fields.push(`banner_url = $${idx++}`); values.push(data.bannerUrl); }
+    if (data.isAvailable !== undefined) { fields.push(`is_available = $${idx++}`); values.push(data.isAvailable); }
+    if (data.minPurchase !== undefined) { fields.push(`min_purchase = $${idx++}`); values.push(data.minPurchase); }
+
+    if (fields.length === 0) return null;
+    values.push(id);
+    const { rows } = await pool.query(`UPDATE promos SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`, values);
+    return rows[0] ? mapPromo(rows[0]) : null;
+  },
+
+  async deletePromo(id: string) {
+    const { rows } = await pool.query('DELETE FROM promos WHERE id = $1 RETURNING *', [id]);
+    return rows[0] ? mapPromo(rows[0]) : null;
+  },
+
+  // --- BRANCHES ---
+  async getBranches() {
+    const { rows } = await pool.query('SELECT * FROM branches ORDER BY is_main_branch DESC, id');
+    return rows.map(mapBranch);
+  },
+
+  async createBranch(branch: any) {
+    const { rows } = await pool.query(
+      `INSERT INTO branches (id, name, address, phone, lat, lng, is_main_branch, coming_soon) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [branch.id, branch.name, branch.address, branch.phone, branch.lat, branch.lng, branch.isMainBranch ?? false, branch.comingSoon ?? false]
+    );
+    return mapBranch(rows[0]);
+  },
+
+  async updateBranch(id: string, data: any) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (data.name !== undefined) { fields.push(`name = $${idx++}`); values.push(data.name); }
+    if (data.address !== undefined) { fields.push(`address = $${idx++}`); values.push(data.address); }
+    if (data.phone !== undefined) { fields.push(`phone = $${idx++}`); values.push(data.phone); }
+    if (data.lat !== undefined) { fields.push(`lat = $${idx++}`); values.push(data.lat); }
+    if (data.lng !== undefined) { fields.push(`lng = $${idx++}`); values.push(data.lng); }
+    if (data.isMainBranch !== undefined) { fields.push(`is_main_branch = $${idx++}`); values.push(data.isMainBranch); }
+    if (data.comingSoon !== undefined) { fields.push(`coming_soon = $${idx++}`); values.push(data.comingSoon); }
+
+    if (fields.length === 0) return null;
+    values.push(id);
+    const { rows } = await pool.query(`UPDATE branches SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`, values);
+    return rows[0] ? mapBranch(rows[0]) : null;
+  },
+
+  async deleteBranch(id: string) {
+    const { rows } = await pool.query('DELETE FROM branches WHERE id = $1 RETURNING *', [id]);
+    return rows[0] ? mapBranch(rows[0]) : null;
+  },
+
+  // --- REVIEWS ---
+  async getReviews() {
+    const { rows } = await pool.query('SELECT * FROM reviews ORDER BY date DESC');
+    return rows.map(mapReview);
+  },
+
+  async createReview(review: any) {
+    const { rows } = await pool.query(
+      `INSERT INTO reviews (id, customer_name, rating, comment, menu_id, menu_name, date) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+      [review.id, review.customerName, review.rating, review.comment, review.menuId, review.menuName, review.date]
+    );
+    return mapReview(rows[0]);
+  },
+
+  async getReviewsByMenuId(menuId: string) {
+    const { rows } = await pool.query('SELECT * FROM reviews WHERE menu_id = $1 ORDER BY date DESC', [menuId]);
+    return rows.map(mapReview);
+  },
+
+  async recalcMenuRating(menuId: string) {
+    const { rows } = await pool.query(
+      'SELECT COALESCE(ROUND(AVG(rating)::numeric, 1), 5.0) as avg_rating FROM reviews WHERE menu_id = $1',
+      [menuId]
+    );
+    const avgRating = parseFloat(rows[0].avg_rating);
+    await pool.query('UPDATE menu_items SET rating = $1 WHERE id = $2', [avgRating, menuId]);
+  },
+
+  // --- RESERVATIONS ---
+  async getReservations() {
+    const { rows } = await pool.query('SELECT * FROM reservations ORDER BY created_at DESC');
+    return rows.map(mapReservation);
+  },
+
+  async createReservation(res: any) {
+    const { rows } = await pool.query(
+      `INSERT INTO reservations (id, user_id, customer_name, customer_email, customer_phone, date, time, number_of_guests, table_number, status, special_requests) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+      [res.id, res.userId || null, res.customerName, res.customerEmail, res.customerPhone, res.date, res.time, res.numberOfGuests, res.tableNumber || null, res.status || 'pending', res.specialRequests || null]
+    );
+    return mapReservation(rows[0]);
+  },
+
+  async updateReservation(id: string, data: any) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (data.status !== undefined) { fields.push(`status = $${idx++}`); values.push(data.status); }
+    if (data.tableNumber !== undefined) { fields.push(`table_number = $${idx++}`); values.push(data.tableNumber); }
+
+    if (fields.length === 0) return null;
+    values.push(id);
+    const { rows } = await pool.query(`UPDATE reservations SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`, values);
+    return rows[0] ? mapReservation(rows[0]) : null;
+  },
+
+  // --- ORDERS ---
+  async getOrders() {
+    const { rows: orderRows } = await pool.query('SELECT * FROM orders ORDER BY created_at DESC');
+    const orders = [];
+    for (const row of orderRows) {
+      const { rows: itemRows } = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [row.id]);
+      orders.push(mapOrder(row, itemRows));
+    }
+    return orders;
+  },
+
+  async createOrder(order: any) {
+    const client = await pool.connect();
     try {
-      const data = fs.readFileSync(DB_FILE, 'utf-8');
-      return JSON.parse(data);
-    } catch (err) {
-      console.error('Error reading DB, re-seeding...', err);
-    }
-  }
-  
-  const seed = getSeedData();
-  saveDB(seed);
-  return seed;
-}
-
-export function saveDB(state: DBState): void {
-  try {
-    fs.writeFileSync(DB_FILE, JSON.stringify(state, null, 2), 'utf-8');
-  } catch (err) {
-    console.error('Error saving DB:', err);
-  }
-}
-
-function getSeedData(): DBState {
-  // Prepopulated lists
-  const users: User[] = [
-    {
-      id: 'usr_admin',
-      email: 'admin@ayameyang.com',
-      name: 'Eyang Admin',
-      role: 'admin',
-      phone: '08123456789',
-      address: 'Jalan Kaliurang KM 5, Sleman, Yogyakarta',
-      createdAt: '2026-01-01T12:00:00Z'
-    },
-    {
-      id: 'usr_customer',
-      email: 'customer@ayameyang.com',
-      name: 'Budi Santoso',
-      role: 'customer',
-      phone: '08987654321',
-      address: 'Jalan Malioboro No. 42, Yogyakarta',
-      createdAt: '2026-02-01T14:30:00Z'
-    }
-  ];
-
-  const menu: MenuItem[] = [
-    // --- MAKANAN (20 items) ---
-    {
-      id: 'mn_1',
-      name: 'Ayam Goreng Kremes Eyang',
-      description: 'Ayam goreng renyah bumbu kuning khas warisan Eyang dengan taburan kremesan super garing, disajikan lengkap dengan sambal terasi dan lalapan segar.',
-      price: 32000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800',
-      isAvailable: true,
-      rating: 4.9,
-      soldCount: 450
-    },
-    {
-      id: 'mn_2',
-      name: 'Ayam Bakar Bumbu Rujak',
-      description: 'Ayam bakar yang diungkep bumbu rujak pedas manis gurih, dibakar di atas arang kelapa hingga harum meresap ke dalam serat daging.',
-      price: 34000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1598515213692-5f252f75d785?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 380
-    },
-    {
-      id: 'mn_3',
-      name: 'Ayam Geprek Sambal Korek',
-      description: 'Ayam goreng tepung renyah berpadu gurih pedasnya sambal korek bawang segar yang disiram minyak kelapa panas. Pedasnya juara!',
-      price: 25000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=800',
-      isAvailable: true,
-      rating: 4.7,
-      soldCount: 520
-    },
-    {
-      id: 'mn_4',
-      name: 'Sate Ayam Madura',
-      description: '10 tusuk sate ayam empuk legendaris disiram saus kacang kental yang gurih legit, taburan bawang goreng harum, dan irisan jeruk limau.',
-      price: 28000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1529042410759-befb1204b468?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 290
-    },
-    {
-      id: 'mn_5',
-      name: 'Soto Ayam Lamongan',
-      description: 'Soto ayam berkuah kuning hangat dengan bumbu koya gurih melimpah, soun lembut, tauge, irisan kol, dan telur rebus.',
-      price: 24000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1547496502-afe22d43cfab?q=80&w=800',
-      isAvailable: true,
-      rating: 4.6,
-      soldCount: 210
-    },
-    {
-      id: 'mn_6',
-      name: 'Rendang Daging Sapi Eyang',
-      description: 'Daging sapi pilihan yang dimasak perlahan selama belasan jam dengan santan kental dan rempah-rempah asli Nusantara hingga empuk berkaramel.',
-      price: 45000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800',
-      isAvailable: true,
-      rating: 4.9,
-      soldCount: 340
-    },
-    {
-      id: 'mn_7',
-      name: 'Nasi Goreng Spesial Eyang',
-      description: 'Nasi goreng harum wajan besi bumbu kampung dengan suwiran ayam, telur mata sapi, bakso sapi, sosis, dan kerupuk udang renyah.',
-      price: 26000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?q=80&w=800',
-      isAvailable: true,
-      rating: 4.7,
-      soldCount: 410
-    },
-    {
-      id: 'mn_8',
-      name: 'Mie Goreng Jawa Nyemek',
-      description: 'Mie telur tebal dimasak dengan kaldu ayam, kol, sawi hijau, suwiran ayam kampung, telur orak-arik, disajikan sedikit basah (nyemek) beraroma asap.',
-      price: 25000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?q=80&w=800',
-      isAvailable: true,
-      rating: 4.6,
-      soldCount: 310
-    },
-    {
-      id: 'mn_9',
-      name: 'Ayam Betutu Gilimanuk',
-      description: 'Ayam utuh yang dibalur dengan bumbu genep Bali yang pekat nan kaya rempah, dikukus lalu dipanggang lambat hingga merata lembutnya.',
-      price: 36000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1532550907401-a500c9a57435?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 150
-    },
-    {
-      id: 'mn_10',
-      name: 'Ayam Taliwang Lombok',
-      description: 'Ayam kampung bakar khas Lombok bercita rasa ekstra pedas gurih dengan bumbu cabai merah dan terasi bakar yang merona menggoda.',
-      price: 38000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=800',
-      isAvailable: true,
-      rating: 4.7,
-      soldCount: 190
-    },
-    {
-      id: 'mn_11',
-      name: 'Ayam Pop khas Minang',
-      description: 'Ayam kampung tanpa kulit yang direbus bumbu air kelapa dan bawang, digoreng kilat dalam minyak panas, disajikan dengan sambal merah gurih.',
-      price: 33000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1610057099443-fde8c4d50f91?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 175
-    },
-    {
-      id: 'mn_12',
-      name: 'Sup Buntut Sapi Rempah',
-      description: 'Kuah kaldu sapi bening gurih bertabur rempah aromatik, potongan buntut sapi empuk, wortel, kentang, daun bawang seledri, dan sambal hijau.',
-      price: 48000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=800',
-      isAvailable: true,
-      rating: 4.9,
-      soldCount: 220
-    },
-    {
-      id: 'mn_13',
-      name: 'Bakso Sapi Kuah Eyang',
-      description: '5 butir bakso sapi urat jumbo super kenyal berdampingan tahu bakso gurih di dalam kuah kaldu sumsum sapi pekat bertabur seledri.',
-      price: 24000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1594756202469-9ff9799b2e4e?q=80&w=800',
-      isAvailable: true,
-      rating: 4.7,
-      soldCount: 300
-    },
-    {
-      id: 'mn_14',
-      name: 'Gado-Gado Siram Pengantin',
-      description: 'Sayur-sayuran segar rebus, tempe, tahu, telur rebus, kentang, disiram bumbu kacang halus bertekstur legit, ditutup emping dan kerupuk bawang.',
-      price: 22000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=800',
-      isAvailable: true,
-      rating: 4.6,
-      soldCount: 140
-    },
-    {
-      id: 'mn_15',
-      name: 'Tumis Cah Kangkung Terasi',
-      description: 'Kangkung sawah segar renyah ditumis cepat dengan api besar bersama terasi udang premium, bawang putih, bawang merah, dan cabai iris.',
-      price: 15000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?q=80&w=800',
-      isAvailable: true,
-      rating: 4.5,
-      soldCount: 260
-    },
-    {
-      id: 'mn_16',
-      name: 'Tempe Mendoan Anget',
-      description: '5 lembar tempe lebar berbalur tepung adonan daun bawang melimpah, digoreng setengah matang khas Banyumasan, lengkap dengan kecap rawit pedas.',
-      price: 12000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 480
-    },
-    {
-      id: 'mn_17',
-      name: 'Tahu Kipas Udang Crispy',
-      description: '3 pcs tahu pong besar berisi tumisan sayuran wortel kol, bakso, udang cincang gurih, digoreng kering berbalut adonan tepung crispy renyah.',
-      price: 18000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800',
-      isAvailable: true,
-      rating: 4.7,
-      soldCount: 190
-    },
-    {
-      id: 'mn_18',
-      name: 'Perkedel Jagung Manis',
-      description: '3 buah perkedel jagung manis renyah pipil yang harum ketumbar dan irisan daun jeruk seledri, digoreng kuning keemasan.',
-      price: 12000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?q=80&w=800',
-      isAvailable: true,
-      rating: 4.6,
-      soldCount: 230
-    },
-    {
-      id: 'mn_19',
-      name: 'Sambal Terasi Ulek Eyang',
-      description: 'Sambal ulek segar khas Eyang menggunakan cabai rawit merah, tomat matang, terasi bakar Juwana premium, dan perasan jeruk purut.',
-      price: 5000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1588166524941-3bf61a9c41db?q=80&w=800',
-      isAvailable: true,
-      rating: 4.9,
-      soldCount: 610
-    },
-    {
-      id: 'mn_20',
-      name: 'Sambal Hijau Padang Pedes',
-      description: 'Sambal ulek kasar cabai hijau segar, tomat hijau, bawang merah, ditumis gurih harum dengan minyak kelapa asli.',
-      price: 5000,
-      category: 'makanan',
-      image: 'https://images.unsplash.com/photo-1596797038530-2c107229654b?q=80&w=800',
-      isAvailable: true,
-      rating: 4.6,
-      soldCount: 325
-    },
-
-    // --- MINUMAN (10 items) ---
-    {
-      id: 'mn_21',
-      name: 'Es Teh Manis Selasih',
-      description: 'Seduhan teh melati wangi khas Solo dengan gula cair murni, disajikan dingin segar berpadu dengan butiran selasih.',
-      price: 6000,
-      category: 'minuman',
-      image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 750
-    },
-    {
-      id: 'mn_22',
-      name: 'Es Jeruk Peras Murni',
-      description: 'Jeruk peras Pontianak segar pilihan kaya vitamin C murni tanpa campuran perisa buatan, disajikan dingin membangkitkan dahaga.',
-      price: 10000,
-      category: 'minuman',
-      image: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800',
-      isAvailable: true,
-      rating: 4.7,
-      soldCount: 450
-    },
-    {
-      id: 'mn_23',
-      name: 'Es Kelapa Muda Jeruk',
-      description: 'Daging kelapa muda serut lembut disajikan di dalam gelas tinggi berisi air kelapa asli, perasan jeruk manis, dan es batu segar.',
-      price: 15000,
-      category: 'minuman',
-      image: 'https://images.unsplash.com/photo-1525385133336-25484724c23c?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 330
-    },
-    {
-      id: 'mn_24',
-      name: 'Jus Alpukat Kerok Coklat',
-      description: 'Buah alpukat mentega segar kental diblender halus dengan pemanis alami, disajikan dengan coretan susu kental manis coklat melingkar.',
-      price: 14000,
-      category: 'minuman',
-      image: 'https://images.unsplash.com/photo-1553530666-ba11a7da3888?q=80&w=800',
-      isAvailable: true,
-      rating: 4.6,
-      soldCount: 220
-    },
-    {
-      id: 'mn_25',
-      name: 'Jus Mangga Manis Arumanis',
-      description: 'Mangga Arumanis matang pohon diblender kental lembut menyegarkan tenggorokan Anda di siang hari.',
-      price: 14000,
-      category: 'minuman',
-      image: 'https://images.unsplash.com/photo-1537640538966-79f369143f8f?q=80&w=800',
-      isAvailable: true,
-      rating: 4.7,
-      soldCount: 190
-    },
-    {
-      id: 'mn_26',
-      name: 'Wedang Jahe Sereh Anget',
-      description: 'Minuman hangat tradisional hasil rebusan jahe merah bakar geprek, sereh wangi, dan pemanis gula merah tebu alami.',
-      price: 10000,
-      category: 'minuman',
-      image: 'https://images.unsplash.com/photo-1576092768241-dec231879fc3?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 120
-    },
-    {
-      id: 'mn_27',
-      name: 'Es Campur Segar Legendaris',
-      description: 'Kolang-kaling empuk, cincau hitam, pacar cina, alpukat, kelapa serut, buah nangka harum disiram sirup merah cap bangau dan susu kental manis.',
-      price: 16000,
-      category: 'minuman',
-      image: 'https://images.unsplash.com/photo-1497534446932-c925b458314e?q=80&w=800',
-      isAvailable: true,
-      rating: 4.9,
-      soldCount: 280
-    },
-    {
-      id: 'mn_28',
-      name: 'Es Kopi Susu Aren Pekat',
-      description: 'Espresso arabika gayo pekat berpadu susu segar gurih creamy dan sirup gula aren asli organik beraroma wangi.',
-      price: 14000,
-      category: 'minuman',
-      image: 'https://images.unsplash.com/photo-1541167760496-1628856ab772?q=80&w=800',
-      isAvailable: true,
-      rating: 4.7,
-      soldCount: 390
-    },
-    {
-      id: 'mn_29',
-      name: 'Es Teh Tarik Rempah',
-      description: 'Teh hitam pekat ditarik berbusa melimpah berpadu susu kental manis dan sedikit kapulaga cengkeh harum.',
-      price: 12000,
-      category: 'minuman',
-      image: 'https://images.unsplash.com/photo-1576092762791-dd9e2220abd1?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 160
-    },
-    {
-      id: 'mn_30',
-      name: 'Es Soda Gembira Ria',
-      description: 'Minuman soda berkarbonasi dingin yang dicampur dengan susu kental manis putih dan sirup merah frambozen.',
-      price: 12000,
-      category: 'minuman',
-      image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=800',
-      isAvailable: true,
-      rating: 4.6,
-      soldCount: 200
-    },
-
-    // --- DESSERT (5 items) ---
-    {
-      id: 'mn_31',
-      name: 'Pisang Goreng Keju Caramel',
-      description: 'Pisang raja matang digoreng dengan adonan tepung renyah, diberi parutan keju cheddar melimpah dan siraman saus caramel gula jawa.',
-      price: 18000,
-      category: 'dessert',
-      image: 'https://images.unsplash.com/photo-1566843972142-a7fcb70de55a?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 320
-    },
-    {
-      id: 'mn_32',
-      name: 'Roti Bakar Coklat Keju Susu',
-      description: '2 tangkup roti tebal dioles mentega harum, dipanggang kecoklatan dengan isi coklat meises premium dan taburan parutan keju gurih susu kental.',
-      price: 18000,
-      category: 'dessert',
-      image: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?q=80&w=800',
-      isAvailable: true,
-      rating: 4.7,
-      soldCount: 240
-    },
-    {
-      id: 'mn_33',
-      name: 'Kolak Pisang Campur Hangat',
-      description: 'Sajian dessert hangat berisi pisang kepok manis, kolang-kaling kenyal, ubi madu dalam kuah kuah santan gula kelapa harum daun pandan.',
-      price: 15000,
-      category: 'dessert',
-      image: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 180
-    },
-    {
-      id: 'mn_34',
-      name: 'Es Teler Istimewa Durian',
-      description: 'Es serut lembut bercampur kerokan kelapa muda, nangka harum, alpukat legit, disempurnakan sebutir daging durian Medan manis wangi.',
-      price: 22000,
-      category: 'dessert',
-      image: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?q=80&w=800',
-      isAvailable: true,
-      rating: 4.9,
-      soldCount: 390
-    },
-    {
-      id: 'mn_35',
-      name: 'Serabi Solo Aneka Rasa',
-      description: '3 gulung serabi lembut bertekstur legit khas Solo dengan varian rasa original santan gurih, keju, dan coklat meises melimpah.',
-      price: 16000,
-      category: 'dessert',
-      image: 'https://images.unsplash.com/photo-1600613247477-fe1780521e7f?q=80&w=800',
-      isAvailable: true,
-      rating: 4.8,
-      soldCount: 150
-    }
-  ];
-
-  const promos: Promo[] = [
-    {
-      id: 'pr_1',
-      title: 'Diskon Spesial AyamEyang 10%',
-      description: 'Nikmati hidangan ayam legendaris warisan resep Eyang dengan potongan instan 10% untuk semua menu tanpa minimum pembelian.',
-      code: 'PROMOEYANG10',
-      discountPercent: 10,
-      bannerUrl: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?q=80&w=800',
-      isAvailable: true,
-      minPurchase: 0
-    },
-    {
-      id: 'pr_2',
-      title: 'Kenyang Hemat Bareng AyamEyang',
-      description: 'Makan berdua lebih seru dan hemat! Potongan Rp 25.000 untuk minimal pembelanjaan senilai Rp 100.000 menggunakan kode promo ini.',
-      code: 'AYAMKENYANG',
-      discountPercent: 15,
-      bannerUrl: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=800',
-      isAvailable: true,
-      minPurchase: 100000
-    },
-    {
-      id: 'pr_3',
-      title: 'Kumpul Keluarga Hari Minggu',
-      description: 'Waktunya makan bersama seluruh keluarga besar di hari Minggu. Dapatkan diskon spesial 20% untuk transaksi minimum Rp 200.000.',
-      code: 'MINGGUKELUARGA',
-      discountPercent: 20,
-      bannerUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?q=80&w=800',
-      isAvailable: true,
-      minPurchase: 200000
-    },
-    {
-      id: 'pr_4',
-      title: 'Reservasi Meja VIP Prioritas',
-      description: 'Pesan meja VIP Anda hari ini untuk pertemuan bisnis atau acara ulang tahun keluarga, dapatkan potongan instan 15% hidangan pembuka.',
-      code: 'RESERVASIVIP',
-      discountPercent: 15,
-      bannerUrl: 'https://images.unsplash.com/photo-1544025162-d76694265947?q=80&w=800',
-      isAvailable: true,
-      minPurchase: 150000
-    },
-    {
-      id: 'pr_5',
-      title: 'Makan Hemat Tengah Bulan',
-      description: 'Jangan khawatir kantong kering di pertengahan bulan. Dapatkan diskon 12% untuk mengobati selera makan Anda sepuasnya.',
-      code: 'MAKANHEMAT',
-      discountPercent: 12,
-      bannerUrl: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=800',
-      isAvailable: true,
-      minPurchase: 75000
-    }
-  ];
-
-  const branches: Branch[] = [
-    {
-      id: 'br_1',
-      name: 'AyamEyang Cabang Utama Bandung',
-      address: 'Jalan Gatot Subroto, Karees Kulon No. 11/33, Bandung',
-      phone: '+62 859-5646-5878 / +62 818-0222-2979',
-      lat: -6.9262,
-      lng: 107.6366,
-      isMainBranch: true,
-      comingSoon: false
-    },
-    {
-      id: 'br_2',
-      name: 'AyamEyang Cabang Jakarta',
-      address: 'Jakarta (Coming Soon)',
-      phone: '-',
-      lat: -6.2736,
-      lng: 106.8143,
-      isMainBranch: false,
-      comingSoon: true
-    },
-    {
-      id: 'br_3',
-      name: 'AyamEyang Cabang Yogyakarta',
-      address: 'Yogyakarta (Coming Soon)',
-      phone: '-',
-      lat: -7.7592,
-      lng: 110.3789,
-      isMainBranch: false,
-      comingSoon: true
-    },
-    {
-      id: 'br_4',
-      name: 'AyamEyang Cabang Surabaya',
-      address: 'Surabaya (Coming Soon)',
-      phone: '-',
-      lat: -7.2711,
-      lng: 112.7523,
-      isMainBranch: false,
-      comingSoon: true
-    },
-    {
-      id: 'br_5',
-      name: 'AyamEyang Cabang Solo',
-      address: 'Solo (Coming Soon)',
-      phone: '-',
-      lat: -7.5684,
-      lng: 110.8012,
-      isMainBranch: false,
-      comingSoon: true
-    }
-  ];
-
-  const reviews: Review[] = [
-    {
-      id: 'rv_1',
-      customerName: 'Siti Rahma',
-      rating: 5,
-      comment: 'Ayam Kremesnya luar biasa renyah dan bumbunya benar-benar gurih sampai ke dalam tulang! Sambal terasinya juara.',
-      menuId: 'mn_1',
-      menuName: 'Ayam Goreng Kremes Eyang',
-      date: '2026-06-15'
-    },
-    {
-      id: 'rv_2',
-      customerName: 'Doni Setiawan',
-      rating: 5,
-      comment: 'Bumbu rujak di ayam bakarnya benar-benar kaya rempah. Manis, asam, gurih, dan pedasnya pas sekali dengan selera lidah Jawa saya.',
-      menuId: 'mn_2',
-      menuName: 'Ayam Bakar Bumbu Rujak',
-      date: '2026-06-18'
-    },
-    {
-      id: 'rv_3',
-      customerName: 'Yulia Ningsih',
-      rating: 4,
-      comment: 'Sate ayamnya sangat empuk, saus kacangnya kental, gurih manisnya pas. Anak-anak sangat suka menu sate ini.',
-      menuId: 'mn_4',
-      menuName: 'Sate Ayam Madura',
-      date: '2026-06-20'
-    },
-    {
-      id: 'rv_4',
-      customerName: 'Rian Hidayat',
-      rating: 5,
-      comment: 'Soto Lamongannya kental akan bumbu koya gurih yang melimpah ruah. Sangat nikmat dimakan hangat-hangat di musim hujan.',
-      menuId: 'mn_5',
-      menuName: 'Soto Ayam Lamongan',
-      date: '2026-06-22'
-    },
-    {
-      id: 'rv_5',
-      customerName: 'Dewi Lestari',
-      rating: 5,
-      comment: 'Rendang daging sapinya sungguh lembut sekali langsung lumer di mulut. Bumbu karamelnya pekat, hitam eksotis dan sangat wangi.',
-      menuId: 'mn_6',
-      menuName: 'Rendang Daging Sapi Eyang',
-      date: '2026-06-23'
-    },
-    {
-      id: 'rv_6',
-      customerName: 'Agus Purnomo',
-      rating: 4,
-      comment: 'Nasi goreng kampungnya lezat beraroma wok-hei khas wajan besi panas. Porsinya mengenyangkan, lengkap dengan telur mata sapi.',
-      menuId: 'mn_7',
-      menuName: 'Nasi Goreng Spesial Eyang',
-      date: '2026-06-24'
-    },
-    {
-      id: 'rv_7',
-      customerName: 'Lina Marlina',
-      rating: 5,
-      comment: 'Ayam Geprek Sambal Koreknya benar-benar pedas meledak tapi bikin nagih terus! Untuk pecinta pedas, ini wajib dicoba.',
-      menuId: 'mn_3',
-      menuName: 'Ayam Geprek Sambal Korek',
-      date: '2026-06-25'
-    },
-    {
-      id: 'rv_8',
-      customerName: 'Bambang Tri',
-      rating: 5,
-      comment: 'Sangat menyukai Es Campur segarnya! Bahan-bahannya lengkap, buah nangkanya sangat harum dan sirupnya manis murni pas.',
-      menuId: 'mn_27',
-      menuName: 'Es Campur Segar Legendaris',
-      date: '2026-06-26'
-    },
-    {
-      id: 'rv_9',
-      customerName: 'Wulan Sari',
-      rating: 5,
-      comment: 'Pisang Goreng Keju Caramel adalah penutup yang sempurna. Adonannya kriuk manis, kejunya gurih melimpah di atasnya.',
-      menuId: 'mn_31',
-      menuName: 'Pisang Goreng Keju Caramel',
-      date: '2026-06-27'
-    },
-    {
-      id: 'rv_10',
-      customerName: 'Fajar Shidiq',
-      rating: 4,
-      comment: 'Es Kopi Susu Arennya memiliki kombinasi pahit kopi gayo dan legit gula aren yang sangat serasi. Cocok jadi pendamping makan siang.',
-      menuId: 'mn_28',
-      menuName: 'Es Kopi Susu Aren Pekat',
-      date: '2026-06-28'
-    },
-    {
-      id: 'rv_11',
-      customerName: 'Indah Kusuma',
-      rating: 5,
-      comment: 'Sup buntut sapinya empuk sekali, kuah kaldunya bening tapi kaya rasa rempah rempah alami. Sangat menyehatkan tubuh.',
-      menuId: 'mn_12',
-      menuName: 'Sup Buntut Sapi Rempah',
-      date: '2026-06-29'
-    },
-    {
-      id: 'rv_12',
-      customerName: 'Rudi Hartono',
-      rating: 5,
-      comment: 'Tempe mendoannya disajikan selagi panas mengepul dengan kecap cabai rawit pedas manis. Sangat gurih berkat irisan daun bawang.',
-      menuId: 'mn_16',
-      menuName: 'Tempe Mendoan Anget',
-      date: '2026-06-30'
-    },
-    {
-      id: 'rv_13',
-      customerName: 'Yusuf Mansur',
-      rating: 4,
-      comment: 'Ayam Betutunya memiliki rasa rempah Bali otentik yang sangat kuat. Meresap sempurna sampai ke dalam serat daging ayam.',
-      menuId: 'mn_9',
-      menuName: 'Ayam Betutu Gilimanuk',
-      date: '2026-07-01'
-    },
-    {
-      id: 'rv_14',
-      customerName: 'Sinta Bella',
-      rating: 5,
-      comment: 'Baksonya kenyal, kuah sumsumnya gurih kaldu sapi pekat alami bukan sekadar penyedap rasa buatan. Porsinya pas.',
-      menuId: 'mn_13',
-      menuName: 'Bakso Sapi Kuah Eyang',
-      date: '2026-07-02'
-    },
-    {
-      id: 'rv_15',
-      customerName: 'Andi Wijaya',
-      rating: 5,
-      comment: 'Jus Alpukatnya sangat kental, rasa coklat manisnya pas, alpukatnya tidak ada rasa pahit sama sekali. Sangat segar.',
-      menuId: 'mn_24',
-      menuName: 'Jus Alpukat Kerok Coklat',
-      date: '2026-07-03'
-    },
-    {
-      id: 'rv_16',
-      customerName: 'Novianti',
-      rating: 5,
-      comment: 'Ayam Taliwangnya pedasnya mantap menggigit! Sambal jeruk limau di bumbu bakarannya meresap gila-gilaan. Rekomendasi banget.',
-      menuId: 'mn_10',
-      menuName: 'Ayam Taliwang Lombok',
-      date: '2026-07-04'
-    },
-    {
-      id: 'rv_17',
-      customerName: 'Hendra Setiawan',
-      rating: 5,
-      comment: 'Tahu Kipisnya berisi udang besar manis segar di dalamnya. Kulit tahu kipas digoreng sangat renyah krispi.',
-      menuId: 'mn_17',
-      menuName: 'Tahu Kipas Udang Crispy',
-      date: '2026-07-04'
-    },
-    {
-      id: 'rv_18',
-      customerName: 'Mega Utami',
-      rating: 4,
-      comment: 'Es Teler Duriannya sungguh luar biasa harum durian Medan asli berpadu lembutnya alpukat kerok dan daging kelapa muda.',
-      menuId: 'mn_34',
-      menuName: 'Es Teler Istimewa Durian',
-      date: '2026-07-05'
-    },
-    {
-      id: 'rv_19',
-      customerName: 'Gilang Ramadhan',
-      rating: 5,
-      comment: 'Mie Jawa Nyemeknya lezat tiada tandingan dengan sentuhan manis gurih dan aroma smokey khas wajan besi tradisional.',
-      menuId: 'mn_8',
-      menuName: 'Mie Goreng Jawa Nyemek',
-      date: '2026-07-05'
-    },
-    {
-      id: 'rv_20',
-      customerName: 'Kiki Amalia',
-      rating: 5,
-      comment: 'Sambal Ulek Terasinya sangat segar karena diulek dadakan. Sangat cocok dinikmati berdampingan dengan Ayam Goreng Kremes Eyang.',
-      menuId: 'mn_19',
-      menuName: 'Sambal Terasi Ulek Eyang',
-      date: '2026-07-06'
-    }
-  ];
-
-  // Let's pre-populate 10 reservations
-  const reservations: Reservation[] = Array.from({ length: 10 }).map((_, i) => {
-    const names = ['Ahmad', 'Budi', 'Chandra', 'Diana', 'Evi', 'Fandi', 'Gita', 'Hadi', 'Indah', 'Joko'];
-    const timeSlots = ['12:00', '13:00', '18:00', '19:00', '20:00'];
-    const dateStr = `2026-07-${String(7 + i).padStart(2, '0')}`;
-    return {
-      id: `res_${i + 1}`,
-      userId: i === 1 ? 'usr_customer' : undefined,
-      customerName: `${names[i]} Wijaya`,
-      customerEmail: `${names[i].toLowerCase()}@example.com`,
-      customerPhone: `081234567${i}0`,
-      date: dateStr,
-      time: timeSlots[i % timeSlots.length],
-      numberOfGuests: (i % 4) + 2,
-      tableNumber: String((i % 12) + 1),
-      status: i % 3 === 2 ? 'cancelled' : i % 2 === 0 ? 'confirmed' : 'pending',
-      specialRequests: i % 4 === 1 ? 'Memerlukan kursi bayi (baby chair)' : i % 4 === 2 ? 'Meja di area bebas asap rokok (non-smoking area)' : undefined,
-      createdAt: `2026-07-01T10:${String(10 + i).padStart(2, '0')}:00Z`
-    };
-  });
-
-  // Let's pre-populate 20 orders
-  const orders: Order[] = Array.from({ length: 20 }).map((_, i) => {
-    const names = ['Andi', 'Bella', 'Citra', 'Dani', 'Elsa', 'Farhan', 'Gani', 'Hana', 'Irfan', 'Julia', 'Kiki', 'Lukman', 'Mira', 'Niko', 'Olga', 'Putra', 'Rina', 'Sandi', 'Tari', 'Vino'];
-    const statuses: OrderStatus[] = ['completed', 'completed', 'completed', 'cooking', 'delivering', 'pending', 'cancelled'];
-    const dateStr = `2026-07-${String(Math.floor(i / 3) + 1).padStart(2, '0')}T${String(11 + (i % 9)).padStart(2, '0')}:${String(10 + (i % 50)).padStart(2, '0')}:00Z`;
-    const qty1 = (i % 3) + 1;
-    const qty2 = (i % 2) + 1;
-    
-    const items: OrderItem[] = [
-      {
-        menuItemId: 'mn_1',
-        name: 'Ayam Goreng Kremes Eyang',
-        price: 32000,
-        quantity: qty1,
-        image: 'https://images.unsplash.com/photo-1562967916-eb82221dfb92?q=80&w=800'
+      await client.query('BEGIN');
+      
+      const { rows } = await client.query(
+        `INSERT INTO orders (id, user_id, customer_name, customer_email, customer_phone, total_amount, status, payment_method, table_number, notes, delivery_address) 
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`,
+        [order.id, order.userId || null, order.customerName, order.customerEmail, order.customerPhone, order.totalAmount, order.status || 'pending', order.paymentMethod, order.tableNumber || null, order.notes || null, order.deliveryAddress || null]
+      );
+      
+      const orderRow = rows[0];
+      const itemRows = [];
+      
+      for (const item of order.items) {
+        const { rows: insertedItems } = await client.query(
+          `INSERT INTO order_items (order_id, menu_item_id, name, price, quantity, image) 
+           VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+          [order.id, item.menuItemId, item.name, item.price, item.quantity, item.image]
+        );
+        itemRows.push(insertedItems[0]);
+        
+        // Update sold count for menu item
+        await client.query('UPDATE menu_items SET sold_count = sold_count + $1 WHERE id = $2', [item.quantity, item.menuItemId]);
       }
-    ];
-    if (i % 2 === 1) {
-      items.push({
-        menuItemId: 'mn_21',
-        name: 'Es Teh Manis Selasih',
-        price: 6000,
-        quantity: qty2,
-        image: 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?q=80&w=800'
-      });
-    } else {
-      items.push({
-        menuItemId: 'mn_22',
-        name: 'Es Jeruk Peras Murni',
-        price: 10000,
-        quantity: qty2,
-        image: 'https://images.unsplash.com/photo-1613478223719-2ab802602423?q=80&w=800'
-      });
+      
+      await client.query('COMMIT');
+      return mapOrder(orderRow, itemRows);
+    } catch (err) {
+      await client.query('ROLLBACK');
+      throw err;
+    } finally {
+      client.release();
     }
+  },
 
-    const totalAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  async updateOrder(id: string, data: any) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (data.status !== undefined) { fields.push(`status = $${idx++}`); values.push(data.status); }
+
+    if (fields.length === 0) return null;
+    values.push(id);
+    const { rows } = await pool.query(`UPDATE orders SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`, values);
+    if (!rows[0]) return null;
+    
+    const { rows: itemRows } = await pool.query('SELECT * FROM order_items WHERE order_id = $1', [id]);
+    return mapOrder(rows[0], itemRows);
+  },
+
+  // --- CONTACT MESSAGES ---
+  async getContactMessages() {
+    const { rows } = await pool.query('SELECT * FROM contact_messages ORDER BY created_at DESC');
+    return rows.map(mapContactMessage);
+  },
+
+  async createContactMessage(msg: any) {
+    const { rows } = await pool.query(
+      `INSERT INTO contact_messages (id, name, email, subject, message, status) 
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [msg.id, msg.name, msg.email, msg.subject, msg.message, msg.status || 'unread']
+    );
+    return mapContactMessage(rows[0]);
+  },
+
+  async updateContactMessage(id: string, data: any) {
+    const fields: string[] = [];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (data.status !== undefined) { fields.push(`status = $${idx++}`); values.push(data.status); }
+
+    if (fields.length === 0) return null;
+    values.push(id);
+    const { rows } = await pool.query(`UPDATE contact_messages SET ${fields.join(', ')} WHERE id = $${idx} RETURNING *`, values);
+    return rows[0] ? mapContactMessage(rows[0]) : null;
+  },
+
+  // --- REPORTS (aggregated queries) ---
+  async getReports() {
+    // 1. Summary stats
+    const { rows: [summaryRow] } = await pool.query(`
+      SELECT 
+        COALESCE(SUM(CASE WHEN status = 'completed' THEN total_amount ELSE 0 END), 0) as total_sales,
+        COUNT(*) as order_count,
+        COUNT(CASE WHEN status = 'completed' THEN 1 END) as completed_order_count,
+        COUNT(CASE WHEN status = 'pending' THEN 1 END) as pending_orders_count
+      FROM orders
+    `);
+
+    const { rows: [resCountRow] } = await pool.query(
+      "SELECT COUNT(*) as count FROM reservations WHERE status = 'confirmed'"
+    );
+
+    const { rows: [menuCountRow] } = await pool.query('SELECT COUNT(*) as count FROM menu_items');
+
+    // 2. Category revenue
+    const { rows: catRows } = await pool.query(`
+      SELECT mi.category, COALESCE(SUM(oi.price * oi.quantity), 0) as revenue
+      FROM order_items oi
+      JOIN orders o ON o.id = oi.order_id
+      LEFT JOIN menu_items mi ON mi.id = oi.menu_item_id
+      WHERE o.status = 'completed'
+      GROUP BY mi.category
+    `);
+    const categoryRevenue: Record<string, number> = { makanan: 0, minuman: 0, dessert: 0 };
+    catRows.forEach((r: any) => {
+      if (r.category && categoryRevenue.hasOwnProperty(r.category)) {
+        categoryRevenue[r.category] = parseInt(r.revenue);
+      }
+    });
+
+    // 3. Daily sales
+    const { rows: dailyRows } = await pool.query(`
+      SELECT DATE(created_at) as date, SUM(total_amount) as amount
+      FROM orders WHERE status = 'completed'
+      GROUP BY DATE(created_at) ORDER BY date DESC LIMIT 10
+    `);
+
+    // 4. Best sellers
+    const { rows: bestRows } = await pool.query(`
+      SELECT name, sold_count as sold, sold_count * price as revenue, image
+      FROM menu_items ORDER BY sold_count DESC LIMIT 5
+    `);
 
     return {
-      id: `ord_${i + 1}`,
-      userId: i === 0 ? 'usr_customer' : undefined,
-      customerName: `${names[i]} Pratama`,
-      customerEmail: `${names[i].toLowerCase()}@example.com`,
-      customerPhone: `089876543${String(i).padStart(2, '0')}`,
-      items,
-      totalAmount,
-      status: i < 15 ? 'completed' : statuses[i % statuses.length],
-      paymentMethod: i % 3 === 0 ? 'midtrans' : i % 3 === 1 ? 'transfer' : 'cash',
-      tableNumber: i % 4 === 0 ? String((i % 8) + 1) : undefined,
-      notes: i % 5 === 1 ? 'Tolong ayamnya agak kering ya kremes melimpah' : undefined,
-      createdAt: dateStr
+      summary: {
+        totalSales: parseInt(summaryRow.total_sales),
+        orderCount: parseInt(summaryRow.order_count),
+        completedOrderCount: parseInt(summaryRow.completed_order_count),
+        activeReservationsCount: parseInt(resCountRow.count),
+        pendingOrdersCount: parseInt(summaryRow.pending_orders_count),
+        menuCount: parseInt(menuCountRow.count),
+      },
+      categoryRevenue,
+      dailySales: dailyRows.map((r: any) => ({ date: r.date.toISOString().split('T')[0], amount: parseInt(r.amount) })).reverse(),
+      bestSellers: bestRows.map((r: any) => ({ name: r.name, sold: parseInt(r.sold), revenue: parseInt(r.revenue), image: r.image }))
     };
-  });
+  }
+};
 
-  const contactMessages: ContactMessage[] = [
-    {
-      id: 'msg_1',
-      name: 'Rahmat Kartolo',
-      email: 'rahmat@example.com',
-      subject: 'Tawaran Kerjasama Bahan Baku Ayam Kampung',
-      message: 'Halo, saya perwakilan dari peternakan ayam organik di Yogyakarta ingin menawarkan suplai ayam kampung kualitas super secara kontinu dengan harga yang sangat bersaing.',
-      status: 'unread',
-      createdAt: '2026-07-05T09:00:00Z'
-    },
-    {
-      id: 'msg_2',
-      name: 'Sherly Anita',
-      email: 'sherly@example.com',
-      subject: 'Reservasi Acara Gathering Kantor 50 Orang',
-      message: 'Dear AyamEyang, kami berencana mengadakan acara gathering kantor untuk 50 orang di cabang Jakarta Selatan pada tanggal 20 Juli nanti. Apakah bisa dikirimkan proposal menu prasmanannya?',
-      status: 'read',
-      createdAt: '2026-07-04T15:30:00Z'
-    }
-  ];
+// ============================================
+// Row Mappers: snake_case DB → camelCase App
+// ============================================
 
+function mapUser(row: any) {
   return {
-    users,
-    menu,
-    promos,
-    branches,
-    reviews,
-    reservations,
-    orders,
-    contactMessages
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    role: row.role,
+    phone: row.phone || '',
+    address: row.address || '',
+    createdAt: row.created_at?.toISOString?.() || row.created_at || ''
+  };
+}
+
+function mapMenuItem(row: any) {
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    price: parseInt(row.price),
+    category: row.category,
+    image: row.image,
+    isAvailable: row.is_available,
+    rating: parseFloat(row.rating),
+    soldCount: parseInt(row.sold_count)
+  };
+}
+
+function mapPromo(row: any) {
+  return {
+    id: row.id,
+    title: row.title,
+    description: row.description,
+    code: row.code,
+    discountPercent: parseInt(row.discount_percent),
+    bannerUrl: row.banner_url,
+    isAvailable: row.is_available,
+    minPurchase: parseInt(row.min_purchase)
+  };
+}
+
+function mapBranch(row: any) {
+  return {
+    id: row.id,
+    name: row.name,
+    address: row.address,
+    phone: row.phone,
+    lat: parseFloat(row.lat),
+    lng: parseFloat(row.lng),
+    isMainBranch: row.is_main_branch,
+    comingSoon: row.coming_soon
+  };
+}
+
+function mapReview(row: any) {
+  return {
+    id: row.id,
+    customerName: row.customer_name,
+    rating: parseInt(row.rating),
+    comment: row.comment,
+    menuId: row.menu_id,
+    menuName: row.menu_name,
+    date: row.date
+  };
+}
+
+function mapReservation(row: any) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    customerName: row.customer_name,
+    customerEmail: row.customer_email,
+    customerPhone: row.customer_phone,
+    date: row.date,
+    time: row.time,
+    numberOfGuests: parseInt(row.number_of_guests),
+    tableNumber: row.table_number,
+    status: row.status,
+    specialRequests: row.special_requests,
+    createdAt: row.created_at?.toISOString?.() || row.created_at || ''
+  };
+}
+
+function mapOrder(row: any, itemRows: any[]) {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    customerName: row.customer_name,
+    customerEmail: row.customer_email,
+    customerPhone: row.customer_phone,
+    items: itemRows.map(ir => ({
+      menuItemId: ir.menu_item_id,
+      name: ir.name,
+      price: parseInt(ir.price),
+      quantity: parseInt(ir.quantity),
+      image: ir.image
+    })),
+    totalAmount: parseInt(row.total_amount),
+    status: row.status,
+    paymentMethod: row.payment_method,
+    tableNumber: row.table_number,
+    notes: row.notes,
+    deliveryAddress: row.delivery_address,
+    createdAt: row.created_at?.toISOString?.() || row.created_at || ''
+  };
+}
+
+function mapContactMessage(row: any) {
+  return {
+    id: row.id,
+    name: row.name,
+    email: row.email,
+    subject: row.subject,
+    message: row.message,
+    status: row.status,
+    createdAt: row.created_at?.toISOString?.() || row.created_at || ''
   };
 }

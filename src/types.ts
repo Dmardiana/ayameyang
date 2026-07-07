@@ -52,6 +52,7 @@ export interface Order {
   paymentMethod: PaymentMethod;
   tableNumber?: string; // empty if delivery/takeaway
   notes?: string;
+  deliveryAddress?: string;
   createdAt: string;
 }
 

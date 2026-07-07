@@ -7,8 +7,8 @@ import express from 'express';
 import path from 'path';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
-import { loadDB, saveDB } from './server-db';
-import { MenuItem, Promo, Branch, Reservation, Order, User, Review, ContactMessage } from './src/types';
+import { db } from './server-db';
+import bcrypt from 'bcryptjs';
 
 // Load environment variables
 import dotenv from 'dotenv';
@@ -21,362 +21,407 @@ async function startServer() {
   // Middlewares
   app.use(express.json());
 
-  // API endpoints FIRST
+  // ============================================
+  // AUTH APIs
+  // ============================================
 
-  // Auth APIs
-  app.post('/api/auth/login', (req, res) => {
-    const { email, password } = req.body;
-    const db = loadDB();
-    
-    // Simple mock auth
-    const user = db.users.find(u => u.email === email);
-    if (!user) {
-      return res.status(401).json({ error: 'Email atau kata sandi salah.' });
-    }
-
-    // Accept simple password equals to role or generic password
-    if (user.role === 'admin' && password !== 'admin') {
-      return res.status(401).json({ error: 'Kata sandi admin salah. Gunakan: "admin"' });
-    }
-    if (user.role === 'customer' && password !== 'customer' && password !== 'rahasia' && password !== '123') {
-      return res.status(401).json({ error: 'Kata sandi salah. Gunakan: "customer" atau daftarkan akun baru.' });
-    }
-
-    return res.json({ user });
-  });
-
-  app.post('/api/auth/register', (req, res) => {
-    const { name, email, phone, address, password } = req.body;
-    if (!name || !email) {
-      return res.status(400).json({ error: 'Nama dan email wajib diisi.' });
-    }
-
-    const db = loadDB();
-    const existing = db.users.find(u => u.email === email);
-    if (existing) {
-      return res.status(400).json({ error: 'Email sudah terdaftar.' });
-    }
-
-    const newUser: User = {
-      id: `usr_${Date.now()}`,
-      email,
-      name,
-      role: 'customer',
-      phone: phone || '',
-      address: address || '',
-      createdAt: new Date().toISOString()
-    };
-
-    db.users.push(newUser);
-    saveDB(db);
-
-    return res.json({ user: newUser });
-  });
-
-  // Menu CRUD APIs
-  app.get('/api/menu', (req, res) => {
-    const db = loadDB();
-    res.json(db.menu);
-  });
-
-  app.post('/api/menu', (req, res) => {
-    const db = loadDB();
-    const item: MenuItem = {
-      id: `mn_${Date.now()}`,
-      rating: 5.0,
-      soldCount: 0,
-      ...req.body
-    };
-    db.menu.unshift(item);
-    saveDB(db);
-    res.json(item);
-  });
-
-  app.put('/api/menu/:id', (req, res) => {
-    const { id } = req.params;
-    const db = loadDB();
-    const index = db.menu.findIndex(m => m.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Menu tidak ditemukan.' });
-
-    db.menu[index] = { ...db.menu[index], ...req.body };
-    saveDB(db);
-    res.json(db.menu[index]);
-  });
-
-  app.delete('/api/menu/:id', (req, res) => {
-    const { id } = req.params;
-    const db = loadDB();
-    const index = db.menu.findIndex(m => m.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Menu tidak ditemukan.' });
-
-    const deleted = db.menu.splice(index, 1);
-    saveDB(db);
-    res.json(deleted[0]);
-  });
-
-  // Promo CRUD APIs
-  app.get('/api/promos', (req, res) => {
-    const db = loadDB();
-    res.json(db.promos);
-  });
-
-  app.post('/api/promos', (req, res) => {
-    const db = loadDB();
-    const promo: Promo = {
-      id: `pr_${Date.now()}`,
-      ...req.body
-    };
-    db.promos.unshift(promo);
-    saveDB(db);
-    res.json(promo);
-  });
-
-  app.put('/api/promos/:id', (req, res) => {
-    const { id } = req.params;
-    const db = loadDB();
-    const index = db.promos.findIndex(p => p.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Promo tidak ditemukan.' });
-
-    db.promos[index] = { ...db.promos[index], ...req.body };
-    saveDB(db);
-    res.json(db.promos[index]);
-  });
-
-  app.delete('/api/promos/:id', (req, res) => {
-    const { id } = req.params;
-    const db = loadDB();
-    const index = db.promos.findIndex(p => p.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Promo tidak ditemukan.' });
-
-    const deleted = db.promos.splice(index, 1);
-    saveDB(db);
-    res.json(deleted[0]);
-  });
-
-  // Branch CRUD APIs
-  app.get('/api/branches', (req, res) => {
-    const db = loadDB();
-    res.json(db.branches);
-  });
-
-  app.post('/api/branches', (req, res) => {
-    const db = loadDB();
-    const branch: Branch = {
-      id: `br_${Date.now()}`,
-      ...req.body
-    };
-    db.branches.push(branch);
-    saveDB(db);
-    res.json(branch);
-  });
-
-  app.put('/api/branches/:id', (req, res) => {
-    const { id } = req.params;
-    const db = loadDB();
-    const index = db.branches.findIndex(b => b.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Cabang tidak ditemukan.' });
-
-    db.branches[index] = { ...db.branches[index], ...req.body };
-    saveDB(db);
-    res.json(db.branches[index]);
-  });
-
-  app.delete('/api/branches/:id', (req, res) => {
-    const { id } = req.params;
-    const db = loadDB();
-    const index = db.branches.findIndex(b => b.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Cabang tidak ditemukan.' });
-
-    const deleted = db.branches.splice(index, 1);
-    saveDB(db);
-    res.json(deleted[0]);
-  });
-
-  // Reservations APIs
-  app.get('/api/reservations', (req, res) => {
-    const db = loadDB();
-    res.json(db.reservations);
-  });
-
-  app.post('/api/reservations', (req, res) => {
-    const db = loadDB();
-    const reservation: Reservation = {
-      id: `res_${Date.now()}`,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      ...req.body
-    };
-    db.reservations.unshift(reservation);
-    saveDB(db);
-    res.json(reservation);
-  });
-
-  app.put('/api/reservations/:id', (req, res) => {
-    const { id } = req.params;
-    const db = loadDB();
-    const index = db.reservations.findIndex(r => r.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Reservasi tidak ditemukan.' });
-
-    db.reservations[index] = { ...db.reservations[index], ...req.body };
-    saveDB(db);
-    res.json(db.reservations[index]);
-  });
-
-  // Orders APIs
-  app.get('/api/orders', (req, res) => {
-    const db = loadDB();
-    res.json(db.orders);
-  });
-
-  app.post('/api/orders', (req, res) => {
-    const db = loadDB();
-    const order: Order = {
-      id: `ord_${Date.now()}`,
-      status: 'pending',
-      createdAt: new Date().toISOString(),
-      ...req.body
-    };
-
-    // Update sold counts for menu items in order
-    order.items.forEach(item => {
-      const menuItem = db.menu.find(m => m.id === item.menuItemId);
-      if (menuItem) {
-        menuItem.soldCount += item.quantity;
+  app.post('/api/auth/login', async (req, res) => {
+    try {
+      const { email, password } = req.body;
+      if (!email || !password) {
+        return res.status(400).json({ error: 'Email dan password wajib diisi.' });
       }
-    });
 
-    db.orders.unshift(order);
-    saveDB(db);
-    res.json(order);
-  });
+      const user = await db.getUserByEmail(email);
+      if (!user) {
+        return res.status(401).json({ error: 'Email atau kata sandi salah.' });
+      }
 
-  app.put('/api/orders/:id', (req, res) => {
-    const { id } = req.params;
-    const db = loadDB();
-    const index = db.orders.findIndex(o => o.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Pesanan tidak ditemukan.' });
+      // Compare password with bcrypt hash
+      const isMatch = await bcrypt.compare(password, user.password_hash);
+      if (!isMatch) {
+        return res.status(401).json({ error: 'Email atau kata sandi salah.' });
+      }
 
-    db.orders[index] = { ...db.orders[index], ...req.body };
-    saveDB(db);
-    res.json(db.orders[index]);
-  });
+      // Return user without password_hash
+      const { password_hash, ...safeUser } = user;
+      const mappedUser = {
+        id: safeUser.id,
+        email: safeUser.email,
+        name: safeUser.name,
+        role: safeUser.role,
+        phone: safeUser.phone || '',
+        address: safeUser.address || '',
+        createdAt: safeUser.created_at?.toISOString?.() || safeUser.created_at || ''
+      };
 
-  // Reviews APIs
-  app.get('/api/reviews', (req, res) => {
-    const db = loadDB();
-    res.json(db.reviews);
-  });
-
-  app.post('/api/reviews', (req, res) => {
-    const db = loadDB();
-    const review: Review = {
-      id: `rv_${Date.now()}`,
-      date: new Date().toISOString().split('T')[0],
-      ...req.body
-    };
-
-    db.reviews.unshift(review);
-
-    // Recompute average rating for the menu item
-    const menuItem = db.menu.find(m => m.id === review.menuId);
-    if (menuItem) {
-      const menuReviews = db.reviews.filter(r => r.menuId === review.menuId);
-      const totalRating = menuReviews.reduce((sum, r) => sum + r.rating, 0);
-      menuItem.rating = parseFloat((totalRating / menuReviews.length).toFixed(1));
+      return res.json({ user: mappedUser });
+    } catch (err: any) {
+      console.error('Login error:', err);
+      return res.status(500).json({ error: 'Terjadi kesalahan server.' });
     }
-
-    saveDB(db);
-    res.json(review);
   });
 
-  // Contact Message API
-  app.post('/api/contact', (req, res) => {
-    const db = loadDB();
-    const msg: ContactMessage = {
-      id: `msg_${Date.now()}`,
-      status: 'unread',
-      createdAt: new Date().toISOString(),
-      ...req.body
-    };
-    db.contactMessages.unshift(msg);
-    saveDB(db);
-    res.json(msg);
-  });
+  app.post('/api/auth/register', async (req, res) => {
+    try {
+      const { name, email, phone, address, password } = req.body;
+      if (!name || !email || !password) {
+        return res.status(400).json({ error: 'Nama, email, dan password wajib diisi.' });
+      }
 
-  app.get('/api/contact', (req, res) => {
-    const db = loadDB();
-    res.json(db.contactMessages);
-  });
+      const existing = await db.getUserByEmail(email);
+      if (existing) {
+        return res.status(400).json({ error: 'Email sudah terdaftar.' });
+      }
 
-  app.put('/api/contact/:id', (req, res) => {
-    const { id } = req.params;
-    const db = loadDB();
-    const index = db.contactMessages.findIndex(m => m.id === id);
-    if (index === -1) return res.status(404).json({ error: 'Pesan tidak ditemukan.' });
+      // Hash password with bcrypt
+      const salt = await bcrypt.genSalt(10);
+      const passwordHash = await bcrypt.hash(password, salt);
 
-    db.contactMessages[index] = { ...db.contactMessages[index], ...req.body };
-    saveDB(db);
-    res.json(db.contactMessages[index]);
-  });
-
-  // Report APIs
-  app.get('/api/reports', (req, res) => {
-    const db = loadDB();
-    
-    // 1. Total Sales & Orders
-    const completedOrders = db.orders.filter(o => o.status === 'completed');
-    const totalSales = completedOrders.reduce((sum, o) => sum + o.totalAmount, 0);
-    const orderCount = db.orders.length;
-    
-    // 2. Counts
-    const activeReservationsCount = db.reservations.filter(r => r.status === 'confirmed').length;
-    const pendingOrdersCount = db.orders.filter(o => o.status === 'pending').length;
-    const menuCount = db.menu.length;
-
-    // 3. Category Sales Data
-    const categoryRevenue: Record<string, number> = { makanan: 0, minuman: 0, dessert: 0 };
-    completedOrders.forEach(order => {
-      order.items.forEach(item => {
-        // Find category
-        const menuItem = db.menu.find(m => m.id === item.menuItemId);
-        const category = menuItem ? menuItem.category : 'makanan';
-        categoryRevenue[category] += item.price * item.quantity;
+      const newUser = await db.createUser({
+        id: `usr_${Date.now()}`,
+        email,
+        name,
+        role: 'customer',
+        phone: phone || '',
+        address: address || '',
+        passwordHash
       });
-    });
 
-    // 4. Sales Trends (simulate monthly/daily from orders)
-    // Group completed orders by date (last 7 days or similar)
-    const dailySales: Record<string, number> = {};
-    completedOrders.forEach(o => {
-      const date = o.createdAt.split('T')[0];
-      dailySales[date] = (dailySales[date] || 0) + o.totalAmount;
-    });
-
-    // 5. Best Seller Menu Items
-    const sortedMenu = [...db.menu].sort((a, b) => b.soldCount - a.soldCount).slice(0, 5);
-    const bestSellers = sortedMenu.map(m => ({
-      name: m.name,
-      sold: m.soldCount,
-      revenue: m.soldCount * m.price,
-      image: m.image
-    }));
-
-    res.json({
-      summary: {
-        totalSales,
-        orderCount,
-        completedOrderCount: completedOrders.length,
-        activeReservationsCount,
-        pendingOrdersCount,
-        menuCount,
-      },
-      categoryRevenue,
-      dailySales: Object.entries(dailySales).map(([date, amount]) => ({ date, amount })).sort((a, b) => a.date.localeCompare(b.date)).slice(-10),
-      bestSellers
-    });
+      return res.json({ user: newUser });
+    } catch (err: any) {
+      console.error('Register error:', err);
+      return res.status(500).json({ error: 'Terjadi kesalahan server.' });
+    }
   });
 
-  // Gemini AI Chatbot API
+  // ============================================
+  // MENU CRUD APIs
+  // ============================================
+
+  app.get('/api/menu', async (req, res) => {
+    try {
+      const items = await db.getMenuItems();
+      res.json(items);
+    } catch (err: any) {
+      console.error('Get menu error:', err);
+      res.status(500).json({ error: 'Gagal memuat menu.' });
+    }
+  });
+
+  app.post('/api/menu', async (req, res) => {
+    try {
+      const item = await db.createMenuItem({
+        id: `mn_${Date.now()}`,
+        rating: 5.0,
+        soldCount: 0,
+        ...req.body
+      });
+      res.json(item);
+    } catch (err: any) {
+      console.error('Create menu error:', err);
+      res.status(500).json({ error: 'Gagal menambah menu.' });
+    }
+  });
+
+  app.put('/api/menu/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updated = await db.updateMenuItem(id, req.body);
+      if (!updated) return res.status(404).json({ error: 'Menu tidak ditemukan.' });
+      res.json(updated);
+    } catch (err: any) {
+      console.error('Update menu error:', err);
+      res.status(500).json({ error: 'Gagal mengupdate menu.' });
+    }
+  });
+
+  app.delete('/api/menu/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await db.deleteMenuItem(id);
+      if (!deleted) return res.status(404).json({ error: 'Menu tidak ditemukan.' });
+      res.json(deleted);
+    } catch (err: any) {
+      console.error('Delete menu error:', err);
+      res.status(500).json({ error: 'Gagal menghapus menu.' });
+    }
+  });
+
+  // ============================================
+  // PROMO CRUD APIs
+  // ============================================
+
+  app.get('/api/promos', async (req, res) => {
+    try {
+      const promos = await db.getPromos();
+      res.json(promos);
+    } catch (err: any) {
+      console.error('Get promos error:', err);
+      res.status(500).json({ error: 'Gagal memuat promo.' });
+    }
+  });
+
+  app.post('/api/promos', async (req, res) => {
+    try {
+      const promo = await db.createPromo({
+        id: `pr_${Date.now()}`,
+        ...req.body
+      });
+      res.json(promo);
+    } catch (err: any) {
+      console.error('Create promo error:', err);
+      res.status(500).json({ error: 'Gagal menambah promo.' });
+    }
+  });
+
+  app.put('/api/promos/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updated = await db.updatePromo(id, req.body);
+      if (!updated) return res.status(404).json({ error: 'Promo tidak ditemukan.' });
+      res.json(updated);
+    } catch (err: any) {
+      console.error('Update promo error:', err);
+      res.status(500).json({ error: 'Gagal mengupdate promo.' });
+    }
+  });
+
+  app.delete('/api/promos/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await db.deletePromo(id);
+      if (!deleted) return res.status(404).json({ error: 'Promo tidak ditemukan.' });
+      res.json(deleted);
+    } catch (err: any) {
+      console.error('Delete promo error:', err);
+      res.status(500).json({ error: 'Gagal menghapus promo.' });
+    }
+  });
+
+  // ============================================
+  // BRANCH CRUD APIs
+  // ============================================
+
+  app.get('/api/branches', async (req, res) => {
+    try {
+      const branches = await db.getBranches();
+      res.json(branches);
+    } catch (err: any) {
+      console.error('Get branches error:', err);
+      res.status(500).json({ error: 'Gagal memuat cabang.' });
+    }
+  });
+
+  app.post('/api/branches', async (req, res) => {
+    try {
+      const branch = await db.createBranch({
+        id: `br_${Date.now()}`,
+        ...req.body
+      });
+      res.json(branch);
+    } catch (err: any) {
+      console.error('Create branch error:', err);
+      res.status(500).json({ error: 'Gagal menambah cabang.' });
+    }
+  });
+
+  app.put('/api/branches/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updated = await db.updateBranch(id, req.body);
+      if (!updated) return res.status(404).json({ error: 'Cabang tidak ditemukan.' });
+      res.json(updated);
+    } catch (err: any) {
+      console.error('Update branch error:', err);
+      res.status(500).json({ error: 'Gagal mengupdate cabang.' });
+    }
+  });
+
+  app.delete('/api/branches/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const deleted = await db.deleteBranch(id);
+      if (!deleted) return res.status(404).json({ error: 'Cabang tidak ditemukan.' });
+      res.json(deleted);
+    } catch (err: any) {
+      console.error('Delete branch error:', err);
+      res.status(500).json({ error: 'Gagal menghapus cabang.' });
+    }
+  });
+
+  // ============================================
+  // RESERVATION APIs
+  // ============================================
+
+  app.get('/api/reservations', async (req, res) => {
+    try {
+      const reservations = await db.getReservations();
+      res.json(reservations);
+    } catch (err: any) {
+      console.error('Get reservations error:', err);
+      res.status(500).json({ error: 'Gagal memuat reservasi.' });
+    }
+  });
+
+  app.post('/api/reservations', async (req, res) => {
+    try {
+      const reservation = await db.createReservation({
+        id: `res_${Date.now()}`,
+        status: 'pending',
+        ...req.body
+      });
+      res.json(reservation);
+    } catch (err: any) {
+      console.error('Create reservation error:', err);
+      res.status(500).json({ error: 'Gagal membuat reservasi.' });
+    }
+  });
+
+  app.put('/api/reservations/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updated = await db.updateReservation(id, req.body);
+      if (!updated) return res.status(404).json({ error: 'Reservasi tidak ditemukan.' });
+      res.json(updated);
+    } catch (err: any) {
+      console.error('Update reservation error:', err);
+      res.status(500).json({ error: 'Gagal mengupdate reservasi.' });
+    }
+  });
+
+  // ============================================
+  // ORDER APIs
+  // ============================================
+
+  app.get('/api/orders', async (req, res) => {
+    try {
+      const orders = await db.getOrders();
+      res.json(orders);
+    } catch (err: any) {
+      console.error('Get orders error:', err);
+      res.status(500).json({ error: 'Gagal memuat pesanan.' });
+    }
+  });
+
+  app.post('/api/orders', async (req, res) => {
+    try {
+      const order = await db.createOrder({
+        id: `ord_${Date.now()}`,
+        status: 'pending',
+        ...req.body
+      });
+      res.json(order);
+    } catch (err: any) {
+      console.error('Create order error:', err);
+      res.status(500).json({ error: 'Gagal membuat pesanan.' });
+    }
+  });
+
+  app.put('/api/orders/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updated = await db.updateOrder(id, req.body);
+      if (!updated) return res.status(404).json({ error: 'Pesanan tidak ditemukan.' });
+      res.json(updated);
+    } catch (err: any) {
+      console.error('Update order error:', err);
+      res.status(500).json({ error: 'Gagal mengupdate pesanan.' });
+    }
+  });
+
+  // ============================================
+  // REVIEW APIs
+  // ============================================
+
+  app.get('/api/reviews', async (req, res) => {
+    try {
+      const reviews = await db.getReviews();
+      res.json(reviews);
+    } catch (err: any) {
+      console.error('Get reviews error:', err);
+      res.status(500).json({ error: 'Gagal memuat ulasan.' });
+    }
+  });
+
+  app.post('/api/reviews', async (req, res) => {
+    try {
+      const review = await db.createReview({
+        id: `rv_${Date.now()}`,
+        date: new Date().toISOString().split('T')[0],
+        ...req.body
+      });
+
+      // Recompute average rating for the menu item
+      if (review.menuId) {
+        await db.recalcMenuRating(review.menuId);
+      }
+
+      res.json(review);
+    } catch (err: any) {
+      console.error('Create review error:', err);
+      res.status(500).json({ error: 'Gagal menambah ulasan.' });
+    }
+  });
+
+  // ============================================
+  // CONTACT MESSAGE APIs
+  // ============================================
+
+  app.get('/api/contact', async (req, res) => {
+    try {
+      const messages = await db.getContactMessages();
+      res.json(messages);
+    } catch (err: any) {
+      console.error('Get contact error:', err);
+      res.status(500).json({ error: 'Gagal memuat pesan.' });
+    }
+  });
+
+  app.post('/api/contact', async (req, res) => {
+    try {
+      const msg = await db.createContactMessage({
+        id: `msg_${Date.now()}`,
+        status: 'unread',
+        ...req.body
+      });
+      res.json(msg);
+    } catch (err: any) {
+      console.error('Create contact error:', err);
+      res.status(500).json({ error: 'Gagal mengirim pesan.' });
+    }
+  });
+
+  app.put('/api/contact/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updated = await db.updateContactMessage(id, req.body);
+      if (!updated) return res.status(404).json({ error: 'Pesan tidak ditemukan.' });
+      res.json(updated);
+    } catch (err: any) {
+      console.error('Update contact error:', err);
+      res.status(500).json({ error: 'Gagal mengupdate pesan.' });
+    }
+  });
+
+  // ============================================
+  // REPORT APIs (Aggregated from PostgreSQL)
+  // ============================================
+
+  app.get('/api/reports', async (req, res) => {
+    try {
+      const reports = await db.getReports();
+      res.json(reports);
+    } catch (err: any) {
+      console.error('Get reports error:', err);
+      res.status(500).json({ error: 'Gagal memuat laporan.' });
+    }
+  });
+
+  // ============================================
+  // GEMINI AI CHATBOT API
+  // ============================================
+
   app.post('/api/gemini/chat', async (req, res) => {
     const { message, history } = req.body;
     if (!message) {
@@ -384,7 +429,7 @@ async function startServer() {
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
+    if (!apiKey || apiKey === 'MY_GEMINI_API_KEY') {
       // Return a warm, helpful Grandma-like fallback message if API key is not configured
       return res.json({
         text: `Halo Sayang! Eyang sangat senang kamu mampir ke website AyamEyang. \n\nMaaf ya, saat ini "Asisten Eyang AI" sedang istirahat sejenak (kunci API belum diatur). Tapi tenang saja, kamu tetap bisa menjelajahi menu-menu lezat warisan keluarga Eyang, memesan hidangan favoritmu secara online, atau melakukan reservasi meja di halaman reservasi. \n\nSaran Eyang, cobalah **Ayam Goreng Kremes Eyang** atau **Ayam Bakar Bumbu Rujak** yang bumbunya meresap sampai ke tulang! Ada yang bisa Eyang bantu lainnya, Sayang?`
@@ -392,7 +437,6 @@ async function startServer() {
     }
 
     try {
-      // Lazy initialization of Gemini client as requested in the Guidelines
       const ai = new GoogleGenAI({
         apiKey: apiKey,
         httpOptions: {
@@ -402,17 +446,20 @@ async function startServer() {
         }
       });
 
-      const db = loadDB();
-      const menuListSummary = db.menu
+      const menuItems = await db.getMenuItems();
+      const branches = await db.getBranches();
+      const promos = await db.getPromos();
+
+      const menuListSummary = menuItems
         .filter(m => m.isAvailable)
         .map(m => `- ${m.name} (${m.category}): Rp ${m.price.toLocaleString('id-ID')} - ${m.description}`)
         .join('\n');
 
-      const branchesSummary = db.branches
+      const branchesSummary = branches
         .map(b => `- ${b.name}: ${b.address} (Telp: ${b.phone})`)
         .join('\n');
 
-      const promosSummary = db.promos
+      const promosSummary = promos
         .filter(p => p.isAvailable)
         .map(p => `- Kode: ${p.code} (${p.title}): diskon ${p.discountPercent}% dengan minimal belanja Rp ${p.minPurchase.toLocaleString('id-ID')}`)
         .join('\n');
@@ -447,9 +494,9 @@ Masuk ke halaman "Reservasi", isi detail nama, jumlah tamu, tanggal, jam, dan pe
 Jika ditanya di luar konteks restoran AyamEyang, arahkan kembali dengan lembut bahwa fokusmu adalah melayani pelanggan setia AyamEyang.
 `;
 
-      const contents = [];
+      const contents: any[] = [];
       if (history && Array.isArray(history)) {
-        history.forEach(h => {
+        history.forEach((h: any) => {
           contents.push({
             role: h.role === 'user' ? 'user' : 'model',
             parts: [{ text: h.text }]
@@ -477,7 +524,10 @@ Jika ditanya di luar konteks restoran AyamEyang, arahkan kembali dengan lembut b
     }
   });
 
-  // Serve Vite assets in development
+  // ============================================
+  // VITE DEV SERVER / PRODUCTION STATIC
+  // ============================================
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
       server: { middlewareMode: true },
@@ -493,7 +543,7 @@ Jika ditanya di luar konteks restoran AyamEyang, arahkan kembali dengan lembut b
   }
 
   app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`🍗 AyamEyang server running on http://localhost:${PORT}`);
   });
 }
 

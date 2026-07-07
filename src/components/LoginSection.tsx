@@ -228,8 +228,8 @@ export default function LoginSection({ onLoginSuccess, setPage }: LoginSectionPr
           <div className="bg-cream/45 p-3.5 rounded-2xl text-[10px] text-charcoal/70 leading-relaxed font-sans border border-primary/10">
             <p className="font-bold text-primary uppercase tracking-wider mb-1">Kredensial Akun Percobaan:</p>
             <ul className="list-disc list-inside space-y-1 font-mono">
-              <li><strong>Admin:</strong> admin@ayameyang.com / admin123</li>
-              <li><strong>Pelanggan:</strong> budi@gmail.com / budi123</li>
+              <li><strong>Admin:</strong> admin@ayameyang.com / admin</li>
+              <li><strong>Pelanggan:</strong> customer@ayameyang.com / customer</li>
             </ul>
           </div>
         )}

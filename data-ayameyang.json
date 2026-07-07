@@ -17,6 +17,33 @@
       "phone": "08987654321",
       "address": "Jalan Malioboro No. 42, Yogyakarta",
       "createdAt": "2026-02-01T14:30:00Z"
+    },
+    {
+      "id": "usr_1783405392657",
+      "email": "dinar@gmail.com",
+      "name": "dinar mardiana",
+      "role": "customer",
+      "phone": "081546709262",
+      "address": "jl Cimaung ",
+      "createdAt": "2026-07-07T06:23:12.657Z"
+    },
+    {
+      "id": "usr_1783405716282",
+      "email": "mardiana@gmail.com",
+      "name": "Dinar Mardiana",
+      "role": "customer",
+      "phone": "081546709262",
+      "address": "cimaung kp tintar jaya hilir",
+      "createdAt": "2026-07-07T06:28:36.282Z"
+    },
+    {
+      "id": "usr_1783405825898",
+      "email": "dinar1234@gmail.com",
+      "name": "dinar",
+      "role": "customer",
+      "phone": "08123456789",
+      "address": "cimaung",
+      "createdAt": "2026-07-07T06:30:25.898Z"
     }
   ],
   "menu": [
@@ -29,7 +56,7 @@
       "image": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=800",
       "isAvailable": true,
       "rating": 4.9,
-      "soldCount": 520
+      "soldCount": 521
     },
     {
       "id": "mn_2",
@@ -40,7 +67,7 @@
       "image": "https://images.unsplash.com/photo-1598515213692-5f252f75d785?q=80&w=800",
       "isAvailable": true,
       "rating": 4.8,
-      "soldCount": 380
+      "soldCount": 383
     },
     {
       "id": "mn_3",
@@ -73,7 +100,7 @@
       "image": "https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=800",
       "isAvailable": true,
       "rating": 4.8,
-      "soldCount": 480
+      "soldCount": 482
     },
     {
       "id": "mn_6",
@@ -84,7 +111,7 @@
       "image": "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?q=80&w=800",
       "isAvailable": true,
       "rating": 4.9,
-      "soldCount": 999
+      "soldCount": 1001
     },
     {
       "id": "mn_21",
@@ -430,6 +457,32 @@
   ],
   "reservations": [
     {
+      "id": "res_1783406313545",
+      "status": "pending",
+      "createdAt": "2026-07-07T06:38:33.545Z",
+      "userId": "usr_1783405825898",
+      "customerName": "dinar",
+      "customerEmail": "dinar1234@gmail.com",
+      "customerPhone": "08123456789",
+      "date": "2026-07-09",
+      "time": "18:00",
+      "numberOfGuests": 3,
+      "specialRequests": "area smoking"
+    },
+    {
+      "id": "res_1783406087110",
+      "status": "pending",
+      "createdAt": "2026-07-07T06:34:47.110Z",
+      "userId": "usr_1783405825898",
+      "customerName": "dinar",
+      "customerEmail": "dinar1234@gmail.com",
+      "customerPhone": "08123456789",
+      "date": "2026-07-16",
+      "time": "18:00",
+      "numberOfGuests": 2,
+      "specialRequests": ""
+    },
+    {
       "id": "res_1",
       "customerName": "Ahmad Wijaya",
       "customerEmail": "ahmad@example.com",
@@ -557,6 +610,106 @@
     }
   ],
   "orders": [
+    {
+      "id": "ord_1783406067276",
+      "status": "pending",
+      "createdAt": "2026-07-07T06:34:27.276Z",
+      "userId": "usr_1783405825898",
+      "customerName": "dinar",
+      "customerEmail": "dinar1234@gmail.com",
+      "customerPhone": "08123456789",
+      "items": [
+        {
+          "menuItemId": "mn_2",
+          "name": "Ayam Bakar Karamel Eyang",
+          "price": 25000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1598515213692-5f252f75d785?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_5",
+          "name": "Tempe Mendoan Hangat",
+          "price": 6000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=800"
+        }
+      ],
+      "totalAmount": 31000,
+      "paymentMethod": "cash",
+      "tableNumber": "2",
+      "notes": "sambal dipisah"
+    },
+    {
+      "id": "ord_1783406027881",
+      "status": "pending",
+      "createdAt": "2026-07-07T06:33:47.881Z",
+      "userId": "usr_1783405825898",
+      "customerName": "dinar",
+      "customerEmail": "dinar1234@gmail.com",
+      "customerPhone": "08123456789",
+      "items": [
+        {
+          "menuItemId": "mn_1",
+          "name": "Ayam Geprek Sambal Korek",
+          "price": 25000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_6",
+          "name": "Free Kol Goreng Crispy",
+          "price": 0,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_2",
+          "name": "Ayam Bakar Karamel Eyang",
+          "price": 25000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1598515213692-5f252f75d785?q=80&w=800"
+        }
+      ],
+      "totalAmount": 50000,
+      "paymentMethod": "transfer",
+      "tableNumber": "7",
+      "notes": "lada"
+    },
+    {
+      "id": "ord_1783405498371",
+      "status": "pending",
+      "createdAt": "2026-07-07T06:24:58.371Z",
+      "customerName": "dinar",
+      "customerEmail": "dinar@gmail.com",
+      "customerPhone": "081546709262",
+      "items": [
+        {
+          "menuItemId": "mn_6",
+          "name": "Free Kol Goreng Crispy",
+          "price": 0,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1511690656952-34342bb7c2f2?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_2",
+          "name": "Ayam Bakar Karamel Eyang",
+          "price": 25000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1598515213692-5f252f75d785?q=80&w=800"
+        },
+        {
+          "menuItemId": "mn_5",
+          "name": "Tempe Mendoan Hangat",
+          "price": 6000,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1565557623262-b51c2513a641?q=80&w=800"
+        }
+      ],
+      "totalAmount": 43000,
+      "paymentMethod": "transfer",
+      "notes": "lada ",
+      "deliveryAddress": "Cimaung"
+    },
     {
       "id": "ord_1",
       "userId": "usr_customer",

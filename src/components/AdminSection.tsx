@@ -34,6 +34,24 @@ interface AdminSectionProps {
 }
 
 export default function AdminSection({ currentUser, setPage, setMenuItems }: AdminSectionProps) {
+  // Admin role guard
+  if (!currentUser || currentUser.role !== 'admin') {
+    return (
+      <div className="py-12 bg-cream/20 font-sans text-center">
+        <div className="max-w-md mx-auto bg-white p-8 rounded-3xl border border-primary/5 shadow-premium space-y-4">
+          <h3 className="font-serif font-bold text-lg text-charcoal">Akses Ditolak</h3>
+          <p className="text-xs text-muted-text">Anda tidak memiliki izin untuk mengakses halaman Admin. Silakan masuk dengan akun Administrator.</p>
+          <button
+            onClick={() => setPage('login')}
+            className="bg-primary hover:bg-primary-hover text-white px-5 py-2.5 rounded-xl text-xs font-semibold shadow-premium cursor-pointer"
+          >
+            Masuk Sebagai Admin
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   // Tabs State
   const [activeTab, setActiveTab] = useState<'laporan' | 'menu' | 'promo' | 'cabang' | 'reservasi' | 'pesanan' | 'pesan'>('laporan');
 
